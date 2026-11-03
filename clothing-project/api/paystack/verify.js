@@ -1,93 +1,86 @@
-module.exports = async (req, res) => {
-    res.setHeader("Content-Type", "application/json");
+function reply(res, status, payload) {
+  return res.status(status).json(payload);
+}
 
-    if (req.method !== "GET") {
-        return res.status(405).json({
-            error: "Method not allowed."
-        });
-    }
-
-    const secretKey = process.env.PAYSTACK_SECRET_KEY;
-
-    if (!secretKey) {
-        return res.status(500).json({
-            error: "Paystack is not configured on the server."
-        });
-    }
-
+function parseMetadata(value) {
+  if (value && typeof value === "object") return value;
+  if (typeof value === "string") {
     try {
-        const reference = String(req.query.reference || "").trim();
-
-        if (!reference || reference.length > 100) {
-            return res.status(400).json({
-                error: "A valid payment reference is required."
-            });
-        }
-
-        const response = await fetch(
-            `https://api.paystack.co/transaction/verify/${encodeURIComponent(reference)}`,
-            {
-                method: "GET",
-                headers: {
-                    Authorization: `Bearer ${secretKey}`,
-                    "Content-Type": "application/json"
-                }
-            }
-        );
-
-        const result = await response.json();
-
-        if (!response.ok || !result.status || !result.data) {
-            console.error(
-                "Paystack verification error:",
-                result.message || "Unknown error"
-            );
-
-            return res.status(502).json({
-                error: "We could not verify this transaction with Paystack."
-            });
-        }
-
-        const transaction = result.data;
-
-        if (transaction.status !== "success") {
-            return res.status(200).json({
-                status: "failed"
-            });
-        }
-
-        if (transaction.currency !== "NGN") {
-            return res.status(200).json({
-                status: "mismatch",
-                error: "The payment currency does not match this order."
-            });
-        }
-
-        const expectedAmount = Number(
-            transaction.metadata?.expected_amount_kobo
-        );
-
-        if (
-            !Number.isInteger(expectedAmount) ||
-            expectedAmount <= 0 ||
-            transaction.amount !== expectedAmount
-        ) {
-            return res.status(200).json({
-                status: "mismatch",
-                error: "The payment amount does not match the order. Please contact District 09."
-            });
-        }
-
-        return res.status(200).json({
-            status: "success",
-            order_email_sent: false
-        });
-
-    } catch (error) {
-        console.error("Paystack verification error:", error);
-
-        return res.status(500).json({
-            error: "Payment verification failed. Please try again."
-        });
+      const parsed = JSON.parse(value);
+      return parsed && typeof parsed === "object" ? parsed : {};
+    } catch {
+      return {};
     }
+  }
+  return {};
+}
+
+module.exports = async (req, res) => {
+  if (req.method !== "GET") {
+    return reply(res, 405, { error: "Method not allowed." });
+  }
+
+  const secretKey = process.env.PAYSTACK_SECRET_KEY || "";
+  if (!secretKey.startsWith("sk_test_") && !secretKey.startsWith("sk_live_")) {
+    return reply(res, 503, { error: "Paystack is not configured on the server." });
+  }
+
+  try {
+    const reference = String(req.query && req.query.reference || "").trim();
+    if (!reference || reference.length > 100 || !/^[A-Za-z0-9_-]+$/.test(reference)) {
+      return reply(res, 400, { error: "A valid payment reference is required." });
+    }
+
+    const response = await fetch(`https://api.paystack.co/transaction/verify/${encodeURIComponent(reference)}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${secretKey}`,
+        Accept: "application/json",
+      },
+      signal: AbortSignal.timeout(15000),
+    });
+
+    let result = {};
+    try { result = await response.json(); } catch { /* handled below */ }
+    if (!response.ok || result.status !== true || !result.data) {
+      console.error("Paystack verification failed; provider details omitted.");
+      return reply(res, 502, { error: "We could not verify this transaction with Paystack." });
+    }
+
+    const transaction = result.data;
+    if (transaction.reference !== reference) {
+      return reply(res, 502, { error: "Paystack returned a mismatched transaction reference." });
+    }
+    if (transaction.status !== "success") {
+      const status = ["failed", "abandoned", "reversed"].includes(transaction.status) ? "failed" : "pending";
+      return reply(res, 200, { status, reference });
+    }
+
+    const metadata = parseMetadata(transaction.metadata);
+    const expectedAmount = Number(metadata.expected_amount_kobo);
+    if (transaction.currency !== "NGN") {
+      return reply(res, 200, { status: "mismatch", error: "The payment currency does not match this order." });
+    }
+    if (!Number.isSafeInteger(expectedAmount) || expectedAmount <= 0 ||
+        Number(transaction.amount) !== expectedAmount || metadata.order_reference !== reference) {
+      return reply(res, 200, {
+        status: "mismatch",
+        error: "The payment amount does not match the order. Please contact District 09.",
+      });
+    }
+
+    // The attached storefront sends an order-intent email before redirecting to Paystack.
+    // This verifier does not claim that a separate paid-order email was sent.
+    return reply(res, 200, {
+      status: "success",
+      reference,
+      amount: Number(transaction.amount),
+      currency: transaction.currency,
+      mode: transaction.domain === "test" ? "test" : "live",
+      order_email_sent: false,
+    });
+  } catch (error) {
+    console.error("Paystack verification error:", error && error.name || "Unknown error");
+    return reply(res, 500, { error: "Payment verification failed. Please try again." });
+  }
 };
