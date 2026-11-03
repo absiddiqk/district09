@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#f5f3ed">
-    <meta name="description" content="DISTRICT 09 — contemporary menswear. Henleys in five shades, sizes M and L, with corporate tailored trousers dropping soon. Order online or via WhatsApp.">
-    <meta property="og:title" content="DISTRICT 09 | Contemporary Menswear & Tailoring">
+    <meta name="description" content="DISTRICT 09 — contemporary fashion for everyone. Henleys in five shades, sizes M and L, with corporate tailored trousers dropping soon. Order online or via WhatsApp.">
+    <meta property="og:title" content="DISTRICT 09 | Contemporary Fashion & Tailoring">
     <meta property="og:description" content="Elevated essentials: Henleys in five timeless shades. Corporate trousers dropping soon.">
     <meta property="og:type" content="website">
     <meta property="og:image" content="https://images.unsplash.com/photo-1523398002811-999ca8dec234?auto=format&fit=crop&w=1200&q=80">
-    <title>DISTRICT 09 | Contemporary Menswear & Tailoring</title>
+    <title>DISTRICT 09 | Contemporary Fashion & Tailoring</title>
     <link rel="icon" href="favicon.png" type="image/png">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -360,7 +360,7 @@
 
 <body>
     <a href="#collection" class="skip-link">Skip to collection</a>
-    <div class="announcement">DISTRICT 09 &mdash; CURATED MEN'S WARDROBE</div>
+    <div class="announcement">DISTRICT 09 &mdash; CURATED WARDROBE</div>
 
     <header>
         <nav aria-label="Main">
@@ -399,7 +399,7 @@
 
             <div class="hero-image-wrap">
                 <img src="https://images.unsplash.com/photo-1523398002811-999ca8dec234?auto=format&fit=crop&w=1000&q=85"
-                     alt="Contemporary menswear collection" class="hero-image" width="1000" height="1250" fetchpriority="high">
+                     alt="Contemporary fashion collection" class="hero-image" width="1000" height="1250" fetchpriority="high">
             </div>
         </section>
 
@@ -408,7 +408,7 @@
                 <div class="section-heading">
                     <p class="eyebrow">DISTRICT 09 / CATALOG</p>
                     <h2>THE COLLECTION</h2>
-                    <p>Curated menswear crafted for enduring comfort and presence.</p>
+                    <p>Curated fashion crafted for enduring comfort and presence.</p>
                 </div>
 
                 <div class="filter-tabs" role="group" aria-label="Filter products">
@@ -615,21 +615,21 @@
         const shadesFor = prefix => SHADES.map(s => ({ name: s.name, hex: SWATCH_HEX[s.key], img: `${prefix}_${s.key}.jpg` }));
 
         const PRODUCTS = [
-            { id: "classic-henley", category: "henley", status: "available", name: "Classic Henley",
+            { id: "classic-henley", category: "henley", status: "available", name: "District 09 Classic Henley",
               tag: "BESTSELLER", price: 25000, sizes: ["M", "L"], colors: shadesFor("plain") },
-            { id: "short-sleeve-henley", category: "henley", status: "available", name: "Short Sleeve Henley",
+            { id: "short-sleeve-henley", category: "henley", status: "available", name: "District 09 Short Sleeve Henley",
               tag: "SUMMER ESSENTIAL", price: 25000, sizes: ["M", "L"], colors: shadesFor("short_sleeve") },
-            { id: "striped-henley", category: "henley", status: "soldout", name: "Striped Henley",
+            { id: "striped-henley", category: "henley", status: "soldout", name: "District 09 Striped Henley",
               tag: "ARCHIVE / SOLD OUT", price: 27000, image: "stripped_henley.jpg", waitlist: "JOIN RESTOCK WAITLIST" },
-            { id: "d09-signature-henley", category: "henley", status: "available", name: "D09 Signature Henley",
+            { id: "d09-signature-henley", category: "henley", status: "available", name: "District 09 Signature Henley",
               tag: "LIMITED DROP", price: 25000, sizes: ["M", "L"],
               colors: [{ name: "Earth Brown", hex: SWATCH_HEX.brown, img: "special_henley.jpg" }] },
-            { id: "plain-trouser", category: "trousers", status: "soon", name: "Plain Trouser",
+            { id: "plain-trouser", category: "trousers", status: "soon", name: "District 09 Plain Trouser",
               tag: "PREVIEW", image: "plain_pants.jpg", note: "Bespoke cut • Waist 30–36", waitlist: "NOTIFY UPON DROP",
-              notifyName: "Plain Corporate Trouser" },
-            { id: "pinstripe-trouser", category: "trousers", status: "soon", name: "Pinstripe Trouser",
+              notifyName: "District 09 Plain Corporate Trouser" },
+            { id: "pinstripe-trouser", category: "trousers", status: "soon", name: "District 09 Pinstripe Trouser",
               tag: "PREVIEW", image: "stripped_pants.jpg", note: "Bespoke cut • Waist 30–36", waitlist: "NOTIFY UPON DROP",
-              notifyName: "Pinstripe Corporate Trouser" }
+              notifyName: "District 09 Pinstripe Corporate Trouser" }
         ];
         const byId = Object.fromEntries(PRODUCTS.map(p => [p.id, p]));
 
