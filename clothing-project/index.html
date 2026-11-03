@@ -273,6 +273,8 @@
         .cart-empty { padding: 24px 0; color: var(--muted); font-size: 13px; }
 
         .checkout-intro { color: var(--muted); font-size: 13px; margin: 8px 0 20px; }
+        .checkout-payment-note { background: #ebe7de; border-left: 3px solid var(--olive); padding: 11px 13px; margin: -8px 0 14px; color: #444; font-size: 12px; }
+        .checkout-payment-note.live { border-left-color: #a82424; }
         .checkout-form { display: grid; gap: 14px; }
         .checkout-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .checkout-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
@@ -515,7 +517,8 @@
             <div id="checkoutFormView">
                 <p class="eyebrow">DISTRICT 09 / CHECKOUT</p>
                 <h2 id="checkoutTitle">YOUR ORDER DETAILS</h2>
-                <p class="checkout-intro">Provide your shipping information below to email your order to bydistrict09@gmail.com. We will confirm availability and delivery charges with you directly.</p>
+                <p class="checkout-intro">Enter your delivery details, then pay the product total securely through Paystack. Delivery charges will be confirmed separately.</p>
+                <p class="checkout-payment-note" id="paymentModeNotice" aria-live="polite">Checking secure Paystack checkout…</p>
 
                 <div class="checkout-summary">
                     <h3>ORDER SUMMARY</h3>
@@ -558,17 +561,17 @@
 
                     <p class="checkout-message" id="checkoutMessage" aria-live="polite"></p>
 
-                    <button class="button checkout-submit" type="submit" id="checkoutSubmit">SUBMIT ORDER</button>
+                    <button class="button checkout-submit" type="submit" id="checkoutSubmit">CONTINUE TO PAYSTACK</button>
                     <button class="button button-secondary button-block" type="button" id="checkoutWhatsAppBtn">SEND ORDER THROUGH WHATSAPP INSTEAD</button>
                 </form>
             </div>
 
             <div id="checkoutSuccessView" class="order-success" hidden>
-                <p class="eyebrow">ORDER RECEIVED</p>
-                <h2 id="successTitle" tabindex="-1">THANK YOU.</h2>
+                <p class="eyebrow" id="successEyebrow">PAYMENT UPDATE</p>
+                <h2 id="successTitle" tabindex="-1">CHECKING PAYMENT…</h2>
                 <div class="order-ref" id="successRef"></div>
-                <p>Your order details have been sent to us. Tap below to confirm availability and delivery on WhatsApp — this is the fastest way to get your order processed.</p>
-                <a class="button button-block" id="successWhatsApp" target="_blank" rel="noopener noreferrer">CONFIRM ON WHATSAPP</a>
+                <p id="successMessage" aria-live="polite">We are checking your payment directly with Paystack.</p>
+                <a class="button button-block" id="successWhatsApp" target="_blank" rel="noopener noreferrer" hidden>ASK ABOUT THIS ORDER ON WHATSAPP</a>
                 <button type="button" class="button button-secondary button-block" data-close>CONTINUE SHOPPING</button>
             </div>
         </div>
@@ -960,13 +963,103 @@
             return "D09-" + Date.now().toString(36).toUpperCase().slice(-6);
         }
 
-        /* ---------- CHECKOUT ---------- */
+        /* ---------- CHECKOUT / PAYSTACK ---------- */
+        async function updatePaymentModeNotice() {
+            const note = $("#paymentModeNotice");
+            try {
+                const res = await fetch("/api/paystack/status", { headers: { "Accept": "application/json" } });
+                const info = await res.json();
+                if (!res.ok || !info.configured) {
+                    note.textContent = "Online payment is temporarily unavailable. You can still send your order through WhatsApp.";
+                    note.classList.add("live");
+                    return;
+                }
+                if (info.mode === "test") {
+                    note.textContent = "Paystack TEST MODE — no real money will be charged while the store is being tested.";
+                    note.classList.remove("live");
+                } else if (window.location.hostname.endsWith(".manus.computer")) {
+                    note.textContent = "A Paystack LIVE key is configured, but live payments are disabled in Preview. Checkout will only work on the published store after approval.";
+                    note.classList.add("live");
+                    $("#checkoutSubmit").disabled = true;
+                    $("#checkoutSubmit").textContent = "LIVE PAYMENTS DISABLED IN PREVIEW";
+                } else {
+                    note.textContent = "Paystack LIVE MODE — completing checkout processes a real payment to the store.";
+                    note.classList.add("live");
+                }
+            } catch {
+                note.textContent = "Secure Paystack checkout is being checked. If it is unavailable, order via WhatsApp.";
+            }
+        }
+
         function showCheckoutForm() {
             $("#checkoutFormView").hidden = false;
             $("#checkoutSuccessView").hidden = true;
             const msg = $("#checkoutMessage");
             msg.textContent = "";
             msg.classList.remove("error");
+        }
+
+        function showPaymentResult(title, message, reference, whatsappMessage, options = {}) {
+            $("#checkoutFormView").hidden = true;
+            $("#checkoutSuccessView").hidden = false;
+            $("#successEyebrow").textContent = options.eyebrow || "PAYMENT UPDATE";
+            $("#successTitle").textContent = title;
+            $("#successMessage").textContent = message;
+            $("#successRef").textContent = reference ? "Reference: " + reference : "";
+            const whatsapp = $("#successWhatsApp");
+            whatsapp.hidden = !whatsappMessage;
+            if (whatsappMessage) whatsapp.href = openWhatsAppUrl(whatsappMessage);
+            if (!$("#checkoutModal").classList.contains("open")) openModal("checkoutModal");
+            $("#successTitle").focus();
+        }
+
+        async function handlePaymentReturn() {
+            const params = new URLSearchParams(window.location.search);
+            const reference = params.get("reference");
+            const paymentState = params.get("payment");
+            if (!reference && paymentState !== "cancelled") return;
+
+            window.history.replaceState({}, "", window.location.pathname + window.location.hash);
+            if (!reference) {
+                showPaymentResult("CHECKOUT CANCELLED", "You left Paystack checkout before payment. No payment has been confirmed and your bag is still saved.", "", "Hello District 09, I left Paystack checkout and would like help placing my order.", { eyebrow: "NO PAYMENT TAKEN" });
+                return;
+            }
+
+            showPaymentResult("CHECKING PAYMENT…", "We are confirming the transaction directly with Paystack. Please do not retry payment while this check is in progress.", reference, "Hello District 09, please help me check payment reference " + reference + ".");
+            try {
+                const res = await fetch("/api/paystack/verify?reference=" + encodeURIComponent(reference), { headers: { "Accept": "application/json" } });
+                let result = {};
+                try { result = await res.json(); } catch { /* handled as an unconfirmed result */ }
+                if (!res.ok && result.status !== "mismatch") throw new Error(result.error || "Payment verification is unavailable.");
+
+                if (result.status === "success") {
+                    bag = [];
+                    renderCart();
+                    $("#checkoutForm").reset();
+                    const emailMessage = result.order_email_sent
+                        ? "Your payment is verified by Paystack, and your order details have been emailed to the store. We will confirm delivery charges separately."
+                        : "Your payment is verified by Paystack. The store email alert may be delayed; use WhatsApp below if you need assistance.";
+                    showPaymentResult("PAYMENT CONFIRMED", emailMessage, reference,
+                        "Hello District 09, my payment is confirmed. Please confirm availability and delivery for reference " + reference + ".",
+                        { eyebrow: "ORDER PAID" });
+                } else if (result.status === "failed" || paymentState === "cancelled") {
+                    showPaymentResult("PAYMENT NOT COMPLETED", "Paystack did not confirm a successful payment. Your bag is still saved. If your bank shows a debit, contact us before trying again.", reference,
+                        "Hello District 09, my payment was not completed or needs checking. Reference: " + reference + ".",
+                        { eyebrow: "NO SUCCESSFUL PAYMENT CONFIRMED" });
+                } else if (result.status === "mismatch") {
+                    showPaymentResult("PAYMENT NEEDS REVIEW", result.error || "The payment amount did not match the order. Please contact the store before retrying.", reference,
+                        "Hello District 09, please check my payment and order. Reference: " + reference + ".",
+                        { eyebrow: "PLEASE CONTACT THE STORE" });
+                } else {
+                    showPaymentResult("PAYMENT PROCESSING", "Paystack has not confirmed the final result yet. Your bag is saved. Please check your Paystack receipt or contact us before retrying.", reference,
+                        "Hello District 09, please check the status of my payment. Reference: " + reference + ".",
+                        { eyebrow: "AWAITING PAYSTACK CONFIRMATION" });
+                }
+            } catch (error) {
+                showPaymentResult("PAYMENT STATUS UNCONFIRMED", error.message + " If your bank shows a debit, do not retry until the store checks the reference.", reference,
+                    "Hello District 09, please verify my Paystack payment. Reference: " + reference + ".",
+                    { eyebrow: "PLEASE CHECK BEFORE RETRYING" });
+            }
         }
 
         async function submitOrder(e) {
@@ -977,10 +1070,9 @@
             const btn = $("#checkoutSubmit");
             const msg = $("#checkoutMessage");
             const fd = new FormData(form);
+            if (fd.get("_honey")) return;
 
-            if (fd.get("_honey")) return; // bot
-
-            const c = {
+            const customer = {
                 name: String(fd.get("name") || "").trim(),
                 email: String(fd.get("email") || "").trim(),
                 phone: String(fd.get("phone") || "").trim(),
@@ -988,63 +1080,57 @@
                 address: String(fd.get("address") || "").trim(),
                 note: String(fd.get("order_note") || "").trim() || "None"
             };
-
-            const ref = makeOrderRef();
+            const checkoutItems = bag.map(item => ({
+                id: item.id, color: item.color, size: item.size, quantity: item.quantity
+            }));
             const lines = orderLines();
             const total = bagTotal();
 
             btn.disabled = true;
-            btn.textContent = "SUBMITTING ORDER...";
+            btn.textContent = "OPENING PAYSTACK...";
             msg.classList.remove("error");
-            msg.textContent = "Submitting your order...";
+            msg.textContent = "Creating your secure payment session...";
 
             try {
-                await sendEmailForm({
-                    _subject: `New District 09 Order ${ref}`,
-                    order_reference: ref,
-                    customer_name: c.name,
-                    customer_email: c.email,
-                    customer_phone: c.phone,
-                    delivery_city_state: c.city,
-                    delivery_address: c.address,
-                    customer_notes: c.note,
-                    order_items: lines.join("\n"),
-                    product_total: money(total),
-                    delivery_fee: "To be confirmed"
+                const initResponse = await fetch("/api/paystack/initialize", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", "Accept": "application/json" },
+                    body: JSON.stringify({ customer, items: checkoutItems })
                 });
+                let payment = {};
+                try { payment = await initResponse.json(); } catch { /* handled below */ }
+                if (!initResponse.ok || !payment.authorization_url || !payment.reference) {
+                    throw new Error(payment.error || "Paystack could not start checkout. Please order via WhatsApp.");
+                }
 
-                const waMessage = [
-                    `Hello District 09, I have submitted order ${ref} through your website.`,
-                    "",
-                    "CUSTOMER DETAILS",
-                    `Name: ${c.name}`, `Email: ${c.email}`, `Phone: ${c.phone}`,
-                    `Location: ${c.city}`, `Address: ${c.address}`, `Notes: ${c.note}`,
-                    "",
-                    "ORDER", ...lines, "",
-                    `Product total: ${money(total)}`,
-                    "Please confirm availability and delivery schedule."
-                ].join("\n");
-
-                // Show a real link instead of window.open() after an await —
-                // browsers (especially Safari/iOS) block popups opened after async work.
-                $("#successRef").textContent = "Order ref: " + ref;
-                $("#successWhatsApp").href = openWhatsAppUrl(waMessage);
-                $("#checkoutFormView").hidden = true;
-                $("#checkoutSuccessView").hidden = false;
-                $("#successTitle").focus();
-
-                bag = [];
-                renderCart();
-                form.reset();
-            } catch (err) {
-                console.error(err);
+                // Email an order-intent notification before redirecting. Successful payment
+                // is separately verified server-side and triggers a paid-order email.
+                try {
+                    await sendEmailForm({
+                        _subject: `District 09 Order Awaiting Paystack Payment ${payment.reference}`,
+                        order_reference: payment.reference,
+                        payment_status: "Awaiting payment — not yet confirmed as paid",
+                        customer_name: customer.name,
+                        customer_email: customer.email,
+                        customer_phone: customer.phone,
+                        delivery_city_state: customer.city,
+                        delivery_address: customer.address,
+                        customer_notes: customer.note,
+                        order_items: lines.join("\n"),
+                        product_total: money(total),
+                        delivery_fee: "To be confirmed separately",
+                        paystack_mode: payment.mode
+                    });
+                } catch {
+                    // Do not block checkout; a verified payment still triggers a server-side order email.
+                }
+                window.location.assign(payment.authorization_url);
+            } catch (error) {
                 msg.classList.add("error");
-                msg.textContent = err.name === "AbortError"
-                    ? "The request timed out. Check your connection or order via WhatsApp."
-                    : "We couldn't submit your order. Please try again or order via WhatsApp.";
+                msg.textContent = error.message || "We couldn't start checkout. Please try again or order via WhatsApp.";
             } finally {
                 btn.disabled = false;
-                btn.textContent = "SUBMIT ORDER";
+                btn.textContent = "CONTINUE TO PAYSTACK";
             }
         }
 
@@ -1090,6 +1176,7 @@
             renderProducts();
             renderCart();
             $("#year").textContent = new Date().getFullYear();
+            updatePaymentModeNotice();
 
             $("#productGrid").addEventListener("click", onGridClick);
 
@@ -1130,6 +1217,7 @@
 
             $("#checkoutForm").addEventListener("submit", submitOrder);
             $("#newsletterForm").addEventListener("submit", subscribe);
+            handlePaymentReturn();
 
             // keep bag in sync across tabs
             window.addEventListener("storage", e => {
