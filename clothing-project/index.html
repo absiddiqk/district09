@@ -615,21 +615,21 @@
         const shadesFor = prefix => SHADES.map(s => ({ name: s.name, hex: SWATCH_HEX[s.key], img: `${prefix}_${s.key}.jpg` }));
 
         const PRODUCTS = [
-            { id: "classic-henley", category: "henley", status: "available", name: "District 09 Classic Henley",
+            { id: "classic-henley", category: "henley", status: "available", name: "D09 Classic Henley",
               tag: "BESTSELLER", price: 25000, sizes: ["M", "L"], colors: shadesFor("plain") },
-            { id: "short-sleeve-henley", category: "henley", status: "available", name: "District 09 Short Sleeve Henley",
+            { id: "short-sleeve-henley", category: "henley", status: "available", name: "D09 Short Sleeve Henley",
               tag: "SUMMER ESSENTIAL", price: 25000, sizes: ["M", "L"], colors: shadesFor("short_sleeve") },
-            { id: "striped-henley", category: "henley", status: "soldout", name: "District 09 Striped Henley",
+            { id: "striped-henley", category: "henley", status: "soldout", name: "D09 Striped Henley",
               tag: "ARCHIVE / SOLD OUT", price: 27000, image: "stripped_henley.jpg", waitlist: "JOIN RESTOCK WAITLIST" },
-            { id: "d09-signature-henley", category: "henley", status: "available", name: "District 09 Signature Henley",
+            { id: "d09-signature-henley", category: "henley", status: "available", name: "D09 Signature Henley",
               tag: "LIMITED DROP", price: 25000, sizes: ["M", "L"],
               colors: [{ name: "Earth Brown", hex: SWATCH_HEX.brown, img: "special_henley.jpg" }] },
-            { id: "plain-trouser", category: "trousers", status: "soon", name: "District 09 Plain Trouser",
+            { id: "plain-trouser", category: "trousers", status: "soon", name: "D09 Plain Trouser",
               tag: "PREVIEW", image: "plain_pants.jpg", note: "Bespoke cut • Waist 30–36", waitlist: "NOTIFY UPON DROP",
-              notifyName: "District 09 Plain Corporate Trouser" },
-            { id: "pinstripe-trouser", category: "trousers", status: "soon", name: "District 09 Pinstripe Trouser",
+              notifyName: "D09 Plain Corporate Trouser" },
+            { id: "pinstripe-trouser", category: "trousers", status: "soon", name: "D09 Pinstripe Trouser",
               tag: "PREVIEW", image: "stripped_pants.jpg", note: "Bespoke cut • Waist 30–36", waitlist: "NOTIFY UPON DROP",
-              notifyName: "District 09 Pinstripe Corporate Trouser" }
+              notifyName: "D09 Pinstripe Corporate Trouser" }
         ];
         const byId = Object.fromEntries(PRODUCTS.map(p => [p.id, p]));
 
