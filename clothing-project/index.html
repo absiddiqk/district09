@@ -146,9 +146,16 @@
             content: ""; position: absolute; bottom: -3px; left: 0; width: 100%; height: 2px; background: var(--olive);
         }
 
+        .product-sections { display: flex; flex-direction: column; gap: 48px; }
+        .product-group[hidden] { display: none; }
+        .product-group-heading { margin-bottom: 18px; padding-bottom: 12px; border-bottom: 1px solid var(--line-strong); }
+        .product-group-heading h3 { font-size: clamp(17px, 2.4vw, 23px); letter-spacing: -.5px; font-weight: 800; }
+        .product-group-heading p { color: var(--muted); margin-top: 4px; font-size: 12px; }
         .product-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 40px 30px; }
         .product-card { min-width: 0; display: flex; flex-direction: column; }
         .product-card[hidden] { display: none; }
+        .price-pending-card .product-note { margin: 8px 0; }
+        .price-pending-card .notify-button { margin-top: auto; }
 
         .image-container {
             position: relative; width: 100%; aspect-ratio: 3 / 4; overflow: hidden;
@@ -161,6 +168,18 @@
         .product-image.fade-out { opacity: .2; }
         .product-card.is-available:hover .product-image { transform: scale(1.03); }
         .coming-soon-card .image-container { background: #e3e7ea; border-color: #d0d7dc; }
+        .image-container.has-image-pair { aspect-ratio: 3 / 2; }
+        .coming-soon-image-pair { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px; }
+        .coming-soon-image-pair .product-image { min-width: 0; transform: none; }
+        .is-preview-blurred .product-image { filter: blur(9px); transform: scale(1.06); opacity: .78; }
+        .is-preview-blurred .coming-soon-image-pair .product-image { transform: none; }
+        .is-preview-blurred .image-container::after,
+        .image-container.color-preview-coming-soon::after {
+            content: "COMING SOON"; position: absolute; inset: 0; display: grid; place-items: center; z-index: 2;
+            color: #fff; font-size: 11px; font-weight: 800; letter-spacing: 2px;
+            text-shadow: 0 1px 5px rgba(0,0,0,.45); background: rgba(15,15,15,.12); pointer-events: none;
+        }
+        .image-container.color-preview-coming-soon .product-image { filter: blur(9px); transform: scale(1.06); opacity: .78; }
 
         .tag {
             display: inline-block; color: var(--olive); font-size: 9px; font-weight: 800;
@@ -332,8 +351,9 @@
         @media (max-width: 680px) {
             nav { padding: 14px 16px; flex-wrap: wrap; gap: 12px; }
             .logo { font-size: 17px; }
-            .nav-links { order: 3; width: 100%; justify-content: space-between; gap: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
-            .nav-links a { font-size: 10px; letter-spacing: .8px; }
+            .nav-links { order: 3; width: 100%; justify-content: flex-start; gap: 18px; padding-top: 12px; border-top: 1px solid var(--line); overflow-x: auto; white-space: nowrap; scrollbar-width: none; }
+            .nav-links::-webkit-scrollbar { display: none; }
+            .nav-links a { font-size: 10px; letter-spacing: .8px; white-space: nowrap; }
             .nav-actions { gap: 14px; }
             .hero { grid-template-columns: 1fr; padding: 34px 16px; gap: 26px; }
             .hero-actions { flex-direction: column; }
@@ -372,9 +392,8 @@
                 <li><a href="#collection" data-filter-link="all">SHOP ALL</a></li>
                 <li><a href="#collection" data-filter-link="henley">HENLEYS</a></li>
                 <li><a href="#collection" data-filter-link="trousers">TROUSERS</a></li>
-                <li><a href="#about">ABOUT</a></li>
-                <li><a href="mailto:bydistrict09@gmail.com">EMAIL</a></li>
-                <li><a href="https://wa.me/2349052191505?text=Hello%20District%2009" target="_blank" rel="noopener noreferrer">CONTACT</a></li>
+                <li><a href="#collection" data-filter-link="collar-tees">COLLAR TEES</a></li>
+                <li><a href="#collection" data-filter-link="corporate-shirts">CORPORATE SHIRTS</a></li>
             </ul>
 
             <div class="nav-actions">
@@ -418,10 +437,12 @@
                     <button type="button" class="filter-btn" data-filter="all" aria-pressed="true">ALL</button>
                     <button type="button" class="filter-btn" data-filter="henley" aria-pressed="false">HENLEYS</button>
                     <button type="button" class="filter-btn" data-filter="trousers" aria-pressed="false">CORPORATE TROUSERS</button>
+                    <button type="button" class="filter-btn" data-filter="collar-tees" aria-pressed="false">COLLAR TEES</button>
+                    <button type="button" class="filter-btn" data-filter="corporate-shirts" aria-pressed="false">CORPORATE SHIRTS</button>
                 </div>
             </div>
 
-            <div class="product-grid" id="productGrid"></div>
+            <div class="product-sections" id="productSections"></div>
             <p class="visually-hidden" id="filterStatus" aria-live="polite"></p>
         </section>
 
@@ -596,7 +617,7 @@
         "use strict";
 
         /* ---------- CONFIG ---------- */
-        const WHATSAPP_NUMBER = "2349052191505";
+        const WHATSAPP_NUMBER = "2349139656964";
         // Web3Forms access key (safe to be public; emails go to bydistrict09@gmail.com)
         const WEB3FORMS_KEY = "c60d97de-2611-4065-aa6f-3b7049940cad";
         const FORM_ENDPOINT = "https://api.web3forms.com/submit";
@@ -613,28 +634,54 @@
             { name: "White",    cls: "white",   key: "white" },
             { name: "Sky Blue", cls: "skyblue", key: "skyblue" },
             { name: "Brown",    cls: "brown",   key: "brown" },
-            { name: "Grey",     cls: "grey",    key: "grey" }
+            { name: "Dark Grey", cls: "grey",    key: "grey" }
         ];
-        const SWATCH_HEX = { black: "#171717", white: "#ffffff", skyblue: "#8dafc0", brown: "#694a38", grey: "#9a9a98" };
+        const SWATCH_HEX = { black: "#171717", white: "#ffffff", skyblue: "#8dafc0", brown: "#694a38", grey: "#4a4a4a", navy: "#172b4d" };
 
         const shadesFor = prefix => SHADES.map(s => ({ name: s.name, hex: SWATCH_HEX[s.key], img: `${prefix}_${s.key}.jpg` }));
+        const signatureColors = [
+            { name: "Brown", hex: SWATCH_HEX.brown, img: "special_henley1.jpg" },
+            { name: "Navy Blue", hex: SWATCH_HEX.navy, img: "special_henley2.jpg" }
+        ];
+        const signatureShortColors = [
+            { name: "Brown", hex: SWATCH_HEX.brown, img: "special_short1.jpg" },
+            { name: "Navy Blue", hex: SWATCH_HEX.navy, img: "special_short2.jpg", status: "soon" }
+        ];
+        const plainTrouserColors = [
+            { name: "Black", hex: SWATCH_HEX.black, img: "plain_blackpants.jpg" },
+            { name: "Grey", hex: SWATCH_HEX.grey, img: "plain_greypants.jpg" },
+            { name: "Navy Blue", hex: SWATCH_HEX.navy, img: "plain_navybluepants.jpg" },
+            { name: "White", hex: SWATCH_HEX.white, img: "plain_whitepants.jpg" }
+        ];
+        const stripedTrouserColors = [
+            { name: "Black", hex: SWATCH_HEX.black, img: "stripped_pants.jpg" },
+            { name: "Grey", hex: SWATCH_HEX.grey, img: "striped_greypants.jpg" },
+            { name: "Navy Blue", hex: SWATCH_HEX.navy, img: "striped_navybluepants.jpg" },
+            { name: "White", hex: SWATCH_HEX.white, img: "striped_whitepants.jpg" }
+        ];
+        const trouserSizes = ["S", "M", "L"];
 
         const PRODUCTS = [
-            { id: "classic-henley", category: "henley", status: "available", name: "D09 Classic Henley",
-              tag: "BESTSELLER", price: 25000, sizes: ["M", "L"], colors: shadesFor("plain") },
-            { id: "short-sleeve-henley", category: "henley", status: "available", name: "D09 Short Sleeve Henley",
-              tag: "SUMMER ESSENTIAL", price: 25000, sizes: ["M", "L"], colors: shadesFor("short_sleeve") },
-            { id: "striped-henley", category: "henley", status: "soldout", name: "D09 Striped Henley",
-              tag: "ARCHIVE / SOLD OUT", price: 27000, image: "stripped_henley.jpg", waitlist: "JOIN RESTOCK WAITLIST" },
-            { id: "d09-signature-henley", category: "henley", status: "available", name: "D09 Signature Henley",
-              tag: "LIMITED DROP", price: 25000, sizes: ["M", "L"],
-              colors: [{ name: "Earth Brown", hex: SWATCH_HEX.brown, img: "special_henley.jpg" }] },
-            { id: "plain-trouser", category: "trousers", status: "soon", name: "D09 Plain Trouser",
-              tag: "PREVIEW", image: "plain_pants.jpg", note: "Bespoke cut • Waist 30–36", waitlist: "NOTIFY UPON DROP",
-              notifyName: "D09 Plain Corporate Trouser" },
-            { id: "pinstripe-trouser", category: "trousers", status: "soon", name: "D09 Pinstripe Trouser",
-              tag: "PREVIEW", image: "stripped_pants.jpg", note: "Bespoke cut • Waist 30–36", waitlist: "NOTIFY UPON DROP",
-              notifyName: "D09 Pinstripe Corporate Trouser" }
+            { id: "classic-henley", category: "henley", group: "classic", status: "available", name: "D09 Classic Henley — Long Sleeve",
+              tag: "CLASSIC / LONG SLEEVE", price: 25000, sizes: ["M", "L"], colors: shadesFor("plain") },
+            { id: "short-sleeve-henley", category: "henley", group: "classic", status: "available", name: "D09 Classic Henley — Short Sleeve",
+              tag: "CLASSIC / SHORT SLEEVE", price: 25000, sizes: ["M", "L"], colors: shadesFor("short_sleeve") },
+            { id: "striped-henley", category: "henley", group: "classic", status: "soon", name: "D09 Striped Henley",
+              tag: "COMING SOON", image: "stripped_henley.jpg", note: "A new striped Henley is on the way.", waitlist: "GET DROP UPDATES" },
+            { id: "d09-signature-henley", category: "henley", group: "signature", status: "soon", name: "D09 Signature Henley — Long Sleeve",
+              tag: "COMING SOON", image: "special_henley1.jpg", note: "The Signature Long Sleeve Henley is on the way.", waitlist: "GET DROP UPDATES" },
+            { id: "d09-signature-henley-short-sleeve", category: "henley", group: "signature", status: "soon", name: "D09 Signature Henley — Short Sleeve",
+              tag: "COMING SOON", image: "special_short2.jpg", note: "The Signature Short Sleeve Henley is on the way.", waitlist: "GET DROP UPDATES" },
+            { id: "plain-trouser", category: "trousers", group: "trousers", status: "available", name: "D09 Plain Trouser",
+              tag: "PLAIN TROUSER", price: 30000, sizes: trouserSizes, colors: plainTrouserColors,
+              note: "Available in sizes S, M, and L." },
+            { id: "pinstripe-trouser", category: "trousers", group: "trousers", status: "available", name: "D09 Pinstripe Trouser",
+              tag: "PINSTRIPE TROUSER", price: 30000, sizes: trouserSizes, colors: stripedTrouserColors,
+              note: "Available in sizes S, M, and L." },
+            { id: "d09-collar-tees", category: "collar-tees", group: "collar-tees", status: "soon", name: "D09 Collar Tees",
+              tag: "COMING SOON", image: "collar_tee.jpg", note: "A new Collar Tee collection is on the way.", waitlist: "GET DROP UPDATES" },
+            { id: "d09-corporate-shirts", category: "corporate-shirts", group: "corporate-shirts", status: "soon", name: "D09 Corporate Shirts",
+              tag: "COMING SOON", image: "cooprate_shirt.jpg", note: "The new Corporate Shirt collection is on the way.", waitlist: "GET DROP UPDATES" }
         ];
         const byId = Object.fromEntries(PRODUCTS.map(p => [p.id, p]));
 
@@ -655,7 +702,7 @@
         /* ---------- STATE ---------- */
         let bag = loadBag();
         const selection = {}; // productId -> { color: index, size: 'M' }
-        PRODUCTS.forEach(p => { if (p.status === "available") selection[p.id] = { color: 0, size: p.sizes[0] }; });
+        PRODUCTS.forEach(p => { if (p.status === "available" || p.status === "price-pending") selection[p.id] = { color: 0, size: p.sizes[0] }; });
 
         function loadBag() {
             try {
@@ -665,7 +712,7 @@
                 return raw.filter(i => {
                     const p = byId[i.id];
                     return p && p.status === "available" &&
-                        p.colors.some(c => c.name === i.color) &&
+                        p.colors.some(c => c.name === i.color && c.status !== "soon") &&
                         p.sizes.includes(i.size) &&
                         Number.isInteger(i.quantity) && i.quantity > 0;
                 }).map(i => ({ id: i.id, color: i.color, size: i.size, quantity: Math.min(i.quantity, MAX_QTY) }));
@@ -684,8 +731,8 @@
         }
 
         /* ---------- PRODUCT RENDERING ---------- */
-        function imgTag(src, alt) {
-            return `<img src="${esc(src)}" alt="${esc(alt)}" class="product-image" loading="lazy" width="600" height="800" onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'">`;
+        function imgTag(src, alt, fit = "cover") {
+            return `<img src="${esc(src)}" alt="${esc(alt)}" class="product-image" style="object-fit:${fit}" loading="lazy" width="600" height="800" onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'">`;
         }
 
         function renderProduct(p) {
@@ -702,10 +749,42 @@
                 </article>`;
             }
 
+            if (p.status === "price-pending") {
+                const sel = selection[p.id];
+                const single = p.colors.length === 1;
+                return `
+                <article class="product-card price-pending-card coming-soon-card" data-category="${p.category}" data-id="${p.id}">
+                    <div class="image-container">${imgTag(p.colors[0].img, `${p.name} in ${p.colors[0].name}`)}<div class="coming-soon-badge">PRICE TBC</div></div>
+                    <span class="tag tag-soon">${esc(p.tag)}</span>
+                    <div class="product-meta-header">
+                        <h3 class="product-title">${esc(p.name)}</h3>
+                        <span class="price price-muted">PRICE TBC</span>
+                    </div>
+                    <p class="product-note">${esc(p.note)}</p>
+                    <div class="selection-panel">
+                        <div class="option-row">
+                            <span class="option-label">Color: <b class="current-color">${esc(p.colors[0].name)}</b></span>
+                            <div class="color-swatches" role="group" aria-label="${esc(p.name)} color">
+                                ${p.colors.map((c, idx) => `<button type="button" class="swatch" data-action="color" data-index="${idx}" style="background:${c.hex}" aria-label="${esc(c.name)}" title="${esc(c.name)}" aria-pressed="${idx === sel.color}" ${single ? "disabled" : ""}></button>`).join("")}
+                            </div>
+                        </div>
+                        <div class="option-row">
+                            <span class="option-label">Waist: <b class="current-size">${esc(sel.size)}</b></span>
+                            <div class="size-pills" role="group" aria-label="Waist size">
+                                ${p.sizes.map(size => `<button type="button" class="size-pill" data-action="size" data-size="${size}" aria-pressed="${size === sel.size}">${size}</button>`).join("")}
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" class="notify-button" data-action="notify" data-name="${esc(p.name)}">${esc(p.waitlist)}</button>
+                </article>`;
+            }
+
             if (p.status === "soon") {
                 return `
-                <article class="product-card coming-soon-card" data-category="${p.category}">
-                    <div class="image-container">${imgTag(p.image, p.name + " — coming soon")}<div class="coming-soon-badge">SOON</div></div>
+                <article class="product-card coming-soon-card is-preview-blurred" data-category="${p.category}">
+                    <div class="image-container${p.images ? " has-image-pair" : ""}">${p.images
+                        ? `<div class="coming-soon-image-pair">${p.images.map((image, index) => imgTag(image, `${p.name} preview ${index + 1} — coming soon`)).join("")}</div>`
+                        : imgTag(p.image, p.name + " — coming soon")}<div class="coming-soon-badge">COMING SOON</div></div>
                     <span class="tag tag-soon">${esc(p.tag)}</span>
                     <div class="product-meta-header">
                         <h3 class="product-title">${esc(p.name)}</h3>
@@ -720,7 +799,7 @@
             const single = p.colors.length === 1;
             return `
             <article class="product-card is-available" data-category="${p.category}" data-id="${p.id}">
-                <div class="image-container">${imgTag(p.colors[0].img, `${p.name} in ${p.colors[0].name}`)}</div>
+                <div class="image-container${p.colors[0].status === "soon" ? " color-preview-coming-soon" : ""}">${imgTag(p.colors[0].img, `${p.name} in ${p.colors[0].name}${p.colors[0].status === "soon" ? " — coming soon" : ""}`, p.colors[0].fit || "cover")}</div>
                 <span class="tag">${esc(p.tag)}</span>
                 <div class="product-meta-header">
                     <h3 class="product-title">${esc(p.name)}</h3>
@@ -733,7 +812,7 @@
                         <div class="color-swatches" role="group" aria-label="Color">
                             ${p.colors.map((c, idx) => `
                                 <button type="button" class="swatch" data-action="color" data-index="${idx}"
-                                    style="background:${c.hex}" aria-label="${esc(c.name)}" title="${esc(c.name)}"
+                                    style="background:${c.hex}" aria-label="${esc(c.name)}${c.status === "soon" ? " — coming soon" : ""}" title="${esc(c.name)}${c.status === "soon" ? " — coming soon" : ""}"
                                     aria-pressed="${idx === sel.color}" ${single ? "disabled" : ""}></button>`).join("")}
                         </div>
                     </div>
@@ -750,7 +829,18 @@
         }
 
         function renderProducts() {
-            $("#productGrid").innerHTML = PRODUCTS.map(renderProduct).join("");
+            const groups = [
+                { id: "classic", category: "henley", title: "CLASSIC HENLEYS", note: "Choose long sleeve or short sleeve. Each style has the same easy-to-shop color and size options." },
+                { id: "signature", category: "henley", title: "SIGNATURE HENLEYS", note: "The signature fit is available in long sleeve and short sleeve, in Brown or Navy Blue." },
+                { id: "trousers", category: "trousers", title: "CORPORATE TROUSERS", note: "Plain and pinstripe styles from ₦30,000. Plain colors: Black, Grey, Navy Blue, and White. Pinstripe colors: Navy Blue, Grey, and White. Sizes S, M, and L." },
+                { id: "collar-tees", category: "collar-tees", title: "COLLAR TEES", note: "A new Collar Tee collection is on the way. Sign up for updates when it arrives." },
+                { id: "corporate-shirts", category: "corporate-shirts", title: "CORPORATE SHIRTS", note: "A new Corporate Shirt collection is on the way. Sign up for updates when it arrives." }
+            ];
+            $("#productSections").innerHTML = groups.map(group => `
+                <section class="product-group" data-group="${group.id}" data-category="${group.category}" aria-label="${group.title}">
+                    <div class="product-group-heading"><h3>${group.title}</h3><p>${group.note}</p></div>
+                    <div class="product-grid">${PRODUCTS.filter(p => p.group === group.id).map(renderProduct).join("")}</div>
+                </section>`).join("");
         }
 
         function setColor(card, p, index) {
@@ -761,6 +851,17 @@
             $(".current-color", card).textContent = color.name;
 
             const image = $(".product-image", card);
+            const imageContainer = image.closest(".image-container");
+            const addButton = $(".add-to-bag-btn", card);
+            const comingSoon = color.status === "soon";
+            imageContainer.classList.toggle("color-preview-coming-soon", comingSoon);
+            image.style.objectFit = color.fit || "cover";
+            image.style.objectPosition = color.position || "center center";
+            image.alt = `${p.name} in ${color.name}${comingSoon ? " — coming soon" : ""}`;
+            if (addButton) {
+                addButton.disabled = comingSoon;
+                addButton.textContent = comingSoon ? "COMING SOON" : "ADD TO BAG";
+            }
             image.classList.add("fade-out");
             const pre = new Image();
             pre.onload = () => { image.src = color.img; image.alt = `${p.name} in ${color.name}`; image.classList.remove("fade-out"); };
@@ -792,6 +893,7 @@
             else if (action === "size") setSize(card, p, btn.dataset.size);
             else if (action === "add") {
                 const s = selection[p.id];
+                if (p.colors[s.color]?.status === "soon") return;
                 addItem(p.id, p.colors[s.color].name, s.size);
                 const original = "ADD TO BAG";
                 btn.textContent = "ADDED ✓";
@@ -808,6 +910,9 @@
                 const match = category === "all" || card.dataset.category === category;
                 card.hidden = !match;
                 if (match) shown++;
+            });
+            $$(".product-group").forEach(group => {
+                group.hidden = category !== "all" && group.dataset.category !== category;
             });
             $$(".filter-btn").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.filter === category)));
             $("#filterStatus").textContent = `${shown} product${shown === 1 ? "" : "s"} shown`;
@@ -1178,7 +1283,7 @@
             $("#year").textContent = new Date().getFullYear();
             updatePaymentModeNotice();
 
-            $("#productGrid").addEventListener("click", onGridClick);
+            $("#productSections").addEventListener("click", onGridClick);
 
             // filters
             $$(".filter-btn").forEach(b => b.addEventListener("click", () => filterCategory(b.dataset.filter)));

@@ -31,38 +31,64 @@ module.exports = async (req, res) => {
       return reply(res, 400, { error: "A valid payment reference is required." });
     }
 
-    const response = await fetch(`https://api.paystack.co/transaction/verify/${encodeURIComponent(reference)}`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${secretKey}`,
-        Accept: "application/json",
-      },
-      signal: AbortSignal.timeout(15000),
-    });
+    const response = await fetch(
+      `https://api.paystack.co/transaction/verify/${encodeURIComponent(reference)}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${secretKey}`,
+          Accept: "application/json",
+        },
+        signal: AbortSignal.timeout(15000),
+      }
+    );
 
     let result = {};
-    try { result = await response.json(); } catch { /* handled below */ }
+    try {
+      result = await response.json();
+    } catch {
+      // Handled below.
+    }
+
     if (!response.ok || result.status !== true || !result.data) {
       console.error("Paystack verification failed; provider details omitted.");
-      return reply(res, 502, { error: "We could not verify this transaction with Paystack." });
+      return reply(res, 502, {
+        error: "We could not verify this transaction with Paystack.",
+      });
     }
 
     const transaction = result.data;
+
     if (transaction.reference !== reference) {
-      return reply(res, 502, { error: "Paystack returned a mismatched transaction reference." });
+      return reply(res, 502, {
+        error: "Paystack returned a mismatched transaction reference.",
+      });
     }
+
     if (transaction.status !== "success") {
-      const status = ["failed", "abandoned", "reversed"].includes(transaction.status) ? "failed" : "pending";
+      const status = ["failed", "abandoned", "reversed"].includes(transaction.status)
+        ? "failed"
+        : "pending";
+
       return reply(res, 200, { status, reference });
     }
 
     const metadata = parseMetadata(transaction.metadata);
     const expectedAmount = Number(metadata.expected_amount_kobo);
+
     if (transaction.currency !== "NGN") {
-      return reply(res, 200, { status: "mismatch", error: "The payment currency does not match this order." });
+      return reply(res, 200, {
+        status: "mismatch",
+        error: "The payment currency does not match this order.",
+      });
     }
-    if (!Number.isSafeInteger(expectedAmount) || expectedAmount <= 0 ||
-        Number(transaction.amount) !== expectedAmount || metadata.order_reference !== reference) {
+
+    if (
+      !Number.isSafeInteger(expectedAmount) ||
+      expectedAmount <= 0 ||
+      Number(transaction.amount) !== expectedAmount ||
+      metadata.order_reference !== reference
+    ) {
       return reply(res, 200, {
         status: "mismatch",
         error: "The payment amount does not match the order. Please contact District 09.",
@@ -80,7 +106,12 @@ module.exports = async (req, res) => {
       order_email_sent: false,
     });
   } catch (error) {
-    console.error("Paystack verification error:", error && error.name || "Unknown error");
-    return reply(res, 500, { error: "Payment verification failed. Please try again." });
+    console.error(
+      "Paystack verification error:",
+      error && error.name || "Unknown error"
+    );
+    return reply(res, 500, {
+      error: "Payment verification failed. Please try again.",
+    });
   }
 };
