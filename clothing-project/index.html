@@ -163,9 +163,8 @@
         }
         .product-image {
             width: 100%; height: 100%; object-fit: cover; background: #fff;
-            transition: opacity .3s ease, transform .5s cubic-bezier(.16, 1, .3, 1);
+            transition: transform .5s cubic-bezier(.16, 1, .3, 1);
         }
-        .product-image.fade-out { opacity: .2; }
         .product-card.is-available:hover .product-image { transform: scale(1.03); }
         .coming-soon-card .image-container { background: #e3e7ea; border-color: #d0d7dc; }
         .image-container.has-image-pair { aspect-ratio: 3 / 2; }
@@ -828,6 +827,23 @@
             </article>`;
         }
 
+        function preloadAvailableColorImages() {
+            const sources = [...new Set(PRODUCTS
+                .filter(product => product.status === "available")
+                .flatMap(product => product.colors.map(color => color.img))
+                .filter(Boolean))];
+            const preload = () => {
+                for (const src of sources) {
+                    const image = new Image();
+                    image.decoding = "async";
+                    image.fetchPriority = "low";
+                    image.src = src;
+                }
+            };
+            if ("requestIdleCallback" in window) window.requestIdleCallback(preload, { timeout: 1800 });
+            else window.setTimeout(preload, 250);
+        }
+
         function renderProducts() {
             const groups = [
                 { id: "classic", category: "henley", title: "CLASSIC HENLEYS", note: "Choose long sleeve or short sleeve. Each style has the same easy-to-shop color and size options." },
@@ -862,11 +878,8 @@
                 addButton.disabled = comingSoon;
                 addButton.textContent = comingSoon ? "COMING SOON" : "ADD TO BAG";
             }
-            image.classList.add("fade-out");
-            const pre = new Image();
-            pre.onload = () => { image.src = color.img; image.alt = `${p.name} in ${color.name}`; image.classList.remove("fade-out"); };
-            pre.onerror = () => { image.classList.remove("fade-out"); };
-            pre.src = color.img;
+            // Swap immediately; browser cache is warmed for available variants during idle time.
+            image.src = color.img;
         }
 
         function setSize(card, p, size) {
@@ -1279,6 +1292,7 @@
         /* ---------- WIRING ---------- */
         function init() {
             renderProducts();
+            preloadAvailableColorImages();
             renderCart();
             $("#year").textContent = new Date().getFullYear();
             updatePaymentModeNotice();
