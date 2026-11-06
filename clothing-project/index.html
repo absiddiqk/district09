@@ -83,6 +83,8 @@
         .nav-links { display: flex; list-style: none; gap: 30px; }
         .nav-links a { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; transition: color .2s; }
         .nav-links a:hover { color: var(--olive); }
+        .nav-link-button { background: none; border: none; padding: 0; color: inherit; font: inherit; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; cursor: pointer; transition: color .2s; }
+        .nav-link-button:hover { color: var(--olive); }
 
         .nav-actions { display: flex; align-items: center; gap: 20px; }
         .size-guide-trigger {
@@ -268,6 +270,8 @@
         }
         .modal-card h2 { letter-spacing: -.5px; }
         .modal-subhead { font-size: 13px; letter-spacing: 1px; text-transform: uppercase; margin: 22px 0 8px; }
+        .contact-options { display: grid; gap: 10px; margin-top: 20px; }
+        .contact-options .button { text-align: center; }
 
         .size-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px; }
         .size-table th, .size-table td { padding: 9px 12px; border: 1px solid var(--line); text-align: left; }
@@ -390,7 +394,7 @@
             <ul class="nav-links">
                 <li><a href="#collection" data-filter-link="all">SHOP ALL</a></li>
                 <li><a href="#about">ABOUT US</a></li>
-                <li><a href="mailto:bydistrict09@gmail.com">CONTACT US</a></li>
+                <li><button type="button" class="nav-link-button" data-open="contactModal" aria-haspopup="dialog">CONTACT US</button></li>
             </ul>
 
             <div class="nav-actions">
@@ -469,6 +473,21 @@
             <p class="newsletter-message" id="newsletterMessage" aria-live="polite"></p>
         </section>
     </main>
+
+    <!-- CONTACT US -->
+    <div class="modal-overlay" id="contactModal" role="dialog" aria-modal="true" aria-labelledby="contactTitle">
+        <div class="modal-card">
+            <button type="button" class="modal-close" data-close aria-label="Close contact options">&times;</button>
+            <h2 id="contactTitle">CONTACT US</h2>
+            <p class="modal-note">Choose how you would like to reach District 09.</p>
+            <div class="contact-options">
+                <a class="button button-secondary button-block" href="mailto:bydistrict09@gmail.com">EMAIL</a>
+                <a class="button button-secondary button-block" href="https://wa.me/2349139656964" target="_blank" rel="noopener noreferrer">WHATSAPP</a>
+                <a class="button button-secondary button-block" href="https://www.instagram.com/district092026" target="_blank" rel="noopener noreferrer">INSTAGRAM</a>
+                <a class="button button-secondary button-block" href="https://www.tiktok.com/@keepfashnweird" target="_blank" rel="noopener noreferrer">TIKTOK</a>
+            </div>
+        </div>
+    </div>
 
     <!-- SIZE GUIDE -->
     <div class="modal-overlay" id="sizeGuideModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
