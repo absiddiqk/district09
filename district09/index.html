@@ -71,7 +71,6 @@
         }
 
         nav {
-            position: relative;
             max-width: 1240px;
             margin: auto;
             padding: 18px 24px;
@@ -97,16 +96,9 @@
         }
 
         .nav-links {
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
             display: flex;
-            justify-content: center;
             list-style: none;
-            margin: 0;
-            padding: 0;
             gap: 30px;
-            white-space: nowrap;
         }
 
         .nav-links a, .nav-links button {
@@ -337,6 +329,8 @@
             background: #fff;
             transition: opacity .3s ease, transform .5s cubic-bezier(0.16, 1, 0.3, 1);
         }
+
+        .product-image.fade-out { opacity: .2; }
 
         .product-card:not(.sold-out):hover .product-image {
             transform: scale(1.03);
@@ -923,19 +917,6 @@
 
         /* RESPONSIVE DESIGN */
         @media (max-width: 960px) {
-            nav { flex-wrap: wrap; gap: 12px; }
-            .nav-links {
-                position: static;
-                order: 3;
-                transform: none;
-                width: 100%;
-                justify-content: center;
-                flex-wrap: wrap;
-                gap: 18px;
-                padding-top: 12px;
-                border-top: 1px solid #dedbd2;
-            }
-
             .hero {
                 grid-template-columns: 1fr 1fr;
                 gap: 32px;
@@ -958,9 +939,12 @@
             .logo { font-size: 17px; }
 
             .nav-links {
-                justify-content: center;
-                gap: 12px;
-                flex-wrap: wrap;
+                order: 3;
+                width: 100%;
+                justify-content: space-between;
+                gap: 10px;
+                padding-top: 12px;
+                border-top: 1px solid #dedbd2;
             }
 
             .nav-links a, .nav-links button {
@@ -1595,28 +1579,6 @@
             window.open(url, "_blank", "noopener,noreferrer");
         }
 
-        // Warm every color variant during idle time so subsequent swatch changes are instant.
-        function preloadColorImages() {
-            const sources = [...new Set(
-                [...document.querySelectorAll(".swatch[data-img]")]
-                    .map(button => button.getAttribute("data-img"))
-                    .filter(Boolean)
-            )];
-            const preload = () => {
-                sources.forEach(src => {
-                    const image = new Image();
-                    image.decoding = "async";
-                    image.fetchPriority = "low";
-                    image.src = src;
-                });
-            };
-            if ("requestIdleCallback" in window) {
-                window.requestIdleCallback(preload, { timeout: 1800 });
-            } else {
-                window.setTimeout(preload, 250);
-            }
-        }
-
         // COLOR SELECTION
         function selectColor(button, cardId, colorName) {
             const card = document.getElementById(cardId);
@@ -1632,9 +1594,17 @@
             const newSource = button.getAttribute("data-img");
             if (!image || !newSource) return;
 
-            // Swap immediately; every swatch image is also warmed in the background below.
-            image.src = newSource;
-            image.alt = `${colorName} Henley`;
+            image.classList.add("fade-out");
+            const preloaded = new Image();
+            preloaded.onload = () => {
+                image.src = newSource;
+                image.alt = `${colorName} Henley`;
+                image.classList.remove("fade-out");
+            };
+            preloaded.onerror = () => {
+                image.classList.remove("fade-out");
+            };
+            preloaded.src = newSource;
         }
 
         // SIZE SELECTION
@@ -2030,8 +2000,6 @@
                 button.classList.toggle("active", matches);
             });
         }
-
-        preloadColorImages();
 
         function openSizeGuide() {
             document.getElementById("sizeGuideModal").classList.add("open");
