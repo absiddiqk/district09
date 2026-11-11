@@ -235,7 +235,8 @@
             const sources = [...new Set(PRODUCTS
                 .filter(product => product.status === "available")
                 .flatMap(product => product.colors.map(color => color.img))
-                .filter(Boolean))];
+                .filter(Boolean)
+                .map(img => cutoutSrc(img)))];
             const preload = () => {
                 for (const src of sources) {
                     if (preloadedColorImages.has(src)) continue;
@@ -247,7 +248,7 @@
                     if (typeof image.decode === "function") image.decode().catch(() => {});
                 }
             };
-            if ("requestIdleCallback" in window) window.requestIdleCallback(preload, { timeout: 1800 });
+            if ("requestIdleCallback" in window) window.requestIdleCallback(preload, { timeout: 400 });
             else window.setTimeout(preload, 250);
         }
 
