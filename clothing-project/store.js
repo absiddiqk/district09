@@ -1176,6 +1176,52 @@
             row.innerHTML = groupedGridHtml();
         }
 
+        /* ---------- HOME: TOP SLIDESHOW OF AVAILABLE PIECES ---------- */
+        function initHeroSlider() {
+            const slider = $("#heroSlider");
+            if (!slider) return;
+            const items = PRODUCTS.filter(p => p.status === "available");
+            if (!items.length) { slider.hidden = true; return; }
+            const track = $("#heroTrack"), dots = $("#heroDots");
+            track.innerHTML = items.map((p, i) => {
+                const c = p.colors[0];
+                return `
+                <article class="hero-slide${i === 0 ? " is-active" : ""}" aria-hidden="${i === 0 ? "false" : "true"}" aria-label="${i + 1} of ${items.length}">
+                    <div class="hero-copy">
+                        <p class="eyebrow">DISTRICT 09 / AVAILABLE NOW</p>
+                        <h2>${esc(p.name)}</h2>
+                        <p class="hero-price">${money(p.price)}</p>
+                        <a class="button" href="product.html?id=${encodeURIComponent(p.id)}" ${i === 0 ? "" : 'tabindex="-1"'}>SHOP NOW</a>
+                    </div>
+                    <div class="hero-photo"><img src="${esc(c.img)}" alt="${esc(p.name + " in " + c.name)}" style="object-fit:${c.fit || "contain"}" ${i === 0 ? 'fetchpriority="high"' : 'loading="lazy"'} onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'"></div>
+                </article>`;
+            }).join("");
+            dots.innerHTML = items.map((p, i) => `<button type="button" class="hero-dot${i === 0 ? " is-active" : ""}" data-index="${i}" aria-label="Show ${esc(p.name)}"></button>`).join("");
+
+            const slides = $$(".hero-slide", track), dotButtons = $$(".hero-dot", dots);
+            const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+            let index = 0, timer = null;
+            function show(n) {
+                index = (n + items.length) % items.length;
+                slides.forEach((s, i) => {
+                    s.classList.toggle("is-active", i === index);
+                    s.setAttribute("aria-hidden", String(i !== index));
+                    const a = $("a", s); if (a) a.tabIndex = i === index ? 0 : -1;
+                });
+                dotButtons.forEach((d, i) => d.classList.toggle("is-active", i === index));
+            }
+            function stop() { if (timer) { clearInterval(timer); timer = null; } }
+            function start() { stop(); if (reduceMotion || items.length < 2 || document.hidden) return; timer = setInterval(() => show(index + 1), 4000); }
+            $("#heroPrev").addEventListener("click", () => { show(index - 1); start(); });
+            $("#heroNext").addEventListener("click", () => { show(index + 1); start(); });
+            dots.addEventListener("click", e => { const b = e.target.closest(".hero-dot"); if (b) { show(Number(b.dataset.index)); start(); } });
+            slider.addEventListener("mouseenter", stop); slider.addEventListener("mouseleave", start);
+            slider.addEventListener("focusin", stop); slider.addEventListener("focusout", start);
+            document.addEventListener("visibilitychange", () => (document.hidden ? stop() : start()));
+            if (items.length < 2) slider.classList.add("is-single");
+            start();
+        }
+
         /* ---------- CUSTOMER REVIEW PHOTOS (auto slideshow) ---------- */
         // The photos come from reviews.js. Edit that file to add your own.
         function initReviews() {
@@ -1251,6 +1297,7 @@
             if ($("#productPage")) renderProductPage();
             renderFeatured();
             initReviews();
+            initHeroSlider();
             preloadAvailableColorImages();
             renderCart();
             const year = $("#year");
