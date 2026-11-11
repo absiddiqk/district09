@@ -1129,7 +1129,8 @@
 
         /* ---------- PRODUCT CARDS (picture + price only) ---------- */
         // Cards show the background-free cutout of each colour (falls back to the original photo).
-        const cutoutSrc = img => "cutouts/" + img.replace(/\.jpg$/, "") + ".webp";
+        const IMG_VERSION = "20261111b"; // bump when product images change so browsers fetch the new files
+        const cutoutSrc = img => "cutouts/" + img.replace(/\.jpg$/, "") + ".webp?v=" + IMG_VERSION;
         function productCardHtml(p) {
             const first = p.colors ? p.colors[0] : null;
             const image = (first && first.img) || p.image || (p.images && p.images[0]);
@@ -1249,7 +1250,7 @@
                         <p class="hero-price">${esc(c.name)}</p>
                         <a class="button" href="product.html?id=${encodeURIComponent(p.id)}&color=${ci}" ${i === 0 ? "" : 'tabindex="-1"'}>SHOP NOW</a>
                     </div>
-                    <div class="hero-photo"><img src="cutouts/${esc(c.img.replace(/\.jpg$/, ""))}.webp" alt="${esc(p.name + " in " + c.name)}" ${i === 0 ? 'fetchpriority="high"' : 'loading="lazy"'} onerror="this.onerror=null;this.src='${esc(c.img)}'"></div>
+                    <div class="hero-photo"><img src="${esc(cutoutSrc(c.img))}" alt="${esc(p.name + " in " + c.name)}" ${i === 0 ? 'fetchpriority="high"' : 'loading="lazy"'} onerror="this.onerror=null;this.src='${esc(c.img)}'"></div>
                 </article>`;
             }).join("");
             dots.innerHTML = items.map(({ p, c }, i) => `<button type="button" class="hero-dot${i === 0 ? " is-active" : ""}" data-index="${i}" aria-label="Show ${esc(p.name)} in ${esc(c.name)}"></button>`).join("");
