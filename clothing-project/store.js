@@ -1126,10 +1126,10 @@
 
         /* ---------- LABELLED SECTIONS: Henleys / Trousers / Tees / Corporate ---------- */
         const CATEGORY_LABELS = [
-            { key: "henley", label: "HENLEYS" },
+            { key: "henley", label: "HENLEY" },
             { key: "trousers", label: "TROUSERS" },
-            { key: "collar-tees", label: "TEES" },
-            { key: "corporate-shirts", label: "CORPORATE" }
+            { key: "collar-tees", label: "COLLAR T-SHIRT" },
+            { key: "corporate-shirts", label: "CORPORATE T-SHIRT" }
         ];
         function groupedGridHtml() {
             const tabs = `<div class="category-tabs" role="navigation" aria-label="Jump to a category">${CATEGORY_LABELS.map(c => `<a href="#cat-${c.key}">${c.label}</a>`).join("")}</div>`;
