@@ -793,6 +793,11 @@
                         <h4>EMAIL</h4>
                         <a href="mailto:bydistrict09@gmail.com">bydistrict09@gmail.com</a>
                     </div>
+                    <div>
+                        <h4>FOLLOW US</h4>
+                        <a href="https://www.instagram.com/district092026" target="_blank" rel="noopener noreferrer">Instagram</a><br>
+                        <a href="https://www.tiktok.com/@keepfashnweird" target="_blank" rel="noopener noreferrer">TikTok</a>
+                    </div>
                 </div>`;
 
             const headerSlot = $("#siteHeader");
@@ -997,7 +1002,7 @@
                     </div>
                     <div class="shipping-card">
                         <h3>RETURNS</h3>
-                        <p>Received the wrong size? You can return the item. The return shipping fee is paid by the customer.</p>
+                        <p>Received the wrong size? You can return the item within 7 days of receiving it, as long as it is unworn, unwashed and in its original condition. The return shipping fee is paid by the customer.</p>
                         <p>To start a return, message us on WhatsApp or email us with your order reference.</p>
                         <div class="shipping-actions">
                             <a class="button button-secondary" href="${openWhatsAppUrl(returnMessage)}" target="_blank" rel="noopener noreferrer">START A RETURN ON WHATSAPP</a>
