@@ -19,7 +19,7 @@
 </head>
 
 <body data-page="home">
-    <a href="#collection" class="skip-link">Skip to collection</a>
+    <a href="#featured" class="skip-link">Skip to products</a>
     <div id="siteHeader"></div>
 
     <main id="main">
@@ -33,7 +33,7 @@
                     Medium and Large. Corporate tailored trousers dropping soon.
                 </p>
                 <div class="hero-actions">
-                    <a href="#collection" class="button" data-filter-link="all">EXPLORE THE DROP &rarr;</a>
+                    <a href="shop.html" class="button">EXPLORE THE DROP &rarr;</a>
                     <button type="button" class="button button-secondary" data-open="sizeGuideModal">VIEW SIZE GUIDE</button>
                 </div>
             </div>
@@ -44,38 +44,14 @@
             </div>
         </section>
 
-        <section class="collection" id="collection">
-            <div class="collection-top">
-                <div class="section-heading">
-                    <p class="eyebrow">DISTRICT 09 / CATALOG</p>
-                    <h2>THE COLLECTION</h2>
-                    <p>Curated fashion crafted for enduring comfort and presence.</p>
-                </div>
-
-                <div class="filter-tabs" role="group" aria-label="Filter products">
-                    <button type="button" class="filter-btn" data-filter="all" aria-pressed="true">ALL</button>
-                    <button type="button" class="filter-btn" data-filter="henley" aria-pressed="false">HENLEYS</button>
-                    <button type="button" class="filter-btn" data-filter="trousers" aria-pressed="false">CORPORATE TROUSERS</button>
-                    <button type="button" class="filter-btn" data-filter="collar-tees" aria-pressed="false">COLLAR TEES</button>
-                    <button type="button" class="filter-btn" data-filter="corporate-shirts" aria-pressed="false">CORPORATE SHIRTS</button>
-                </div>
+        <section class="featured" id="featured">
+            <div class="section-heading">
+                <p class="eyebrow">DISTRICT 09 / AVAILABLE NOW</p>
+                <h2>SHOP THE DROP</h2>
+                <p>Pick a piece to choose your colour and size.</p>
             </div>
-
-            <div class="product-sections" id="productSections"></div>
-            <p class="visually-hidden" id="filterStatus" aria-live="polite"></p>
-        </section>
-
-        <section class="brand-story" id="about">
-            <div class="story-content">
-                <span class="eyebrow">THE D09 VISION</span>
-                <h2>CONTEMPORARY FIT.<br>UNCOMPROMISING DETAIL.</h2>
-                <p>
-                    DISTRICT 09 bridges the transition from laid-back luxury
-                    to boardroom confidence. Every piece is designed to be worn,
-                    paired, and lived in.
-                </p>
-                <a href="shop.html" class="button">SHOP THE LIVE PIECES &rarr;</a>
-            </div>
+            <div class="featured-grid" id="featuredRow"></div>
+            <a href="shop.html" class="button">SHOP ALL &rarr;</a>
         </section>
 
         <section class="reviews" id="reviews" aria-labelledby="reviewsTitle">
@@ -90,8 +66,6 @@
             </div>
             <p class="review-note" id="reviewNote"></p>
         </section>
-
-        <section class="shipping" id="shipping" data-shipping></section>
 
         <section class="newsletter">
             <h2>JOIN THE DISTRICT 09 INNER CIRCLE</h2>

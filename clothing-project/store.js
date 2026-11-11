@@ -744,9 +744,6 @@
 
         /* ---------- SHARED PAGE PARTS (header, footer, pop-ups) ---------- */
         function injectChrome() {
-            const home = PAGE === "home";
-            const toHome = hash => (home ? hash : "index.html" + hash);
-
             const announcement = document.createElement("div");
             announcement.className = "announcement";
             announcement.innerHTML = "DISTRICT 09 &mdash; CURATED WARDROBE";
@@ -754,11 +751,11 @@
             const header = document.createElement("header");
             header.innerHTML = `
                 <nav aria-label="Main">
-                    <a href="${home ? "#home" : "index.html"}" class="logo">DISTRICT 09 <span>COLLECTION</span></a>
+                    <a href="index.html" class="logo">DISTRICT 09 <span>COLLECTION</span></a>
 
                     <ul class="nav-links">
                         <li><a href="shop.html">SHOP ALL</a></li>
-                        <li><a href="${toHome("#about")}">ABOUT US</a></li>
+                        <li><a href="about.html">ABOUT US</a></li>
                         <li><button type="button" class="nav-link-button" data-open="contactModal" aria-haspopup="dialog">CONTACT US</button></li>
                     </ul>
 
@@ -771,13 +768,13 @@
             const footer = document.createElement("footer");
             footer.innerHTML = `
                 <div class="footer-content">
-                    <a href="${home ? "#home" : "index.html"}" class="logo">DISTRICT 09 <span>COLLECTION</span></a>
+                    <a href="index.html" class="logo">DISTRICT 09 <span>COLLECTION</span></a>
                     <p>&copy; <span id="year">2026</span> DISTRICT 09 COLLECTION. Built for the modern wardrobe.</p>
                     <div class="footer-links">
                         <a href="shop.html">SHOP</a>
                         <button type="button" data-open="sizeGuideModal">SIZE GUIDE</button>
-                        <a href="${toHome("#about")}">ABOUT</a>
-                        <a href="${toHome("#shipping")}">SHIPPING &amp; RETURNS</a>
+                        <a href="about.html">ABOUT</a>
+                        <a href="shipping.html">SHIPPING &amp; RETURNS</a>
                         <a href="track.html">TRACK ORDER</a>
                         <a href="mailto:bydistrict09@gmail.com">EMAIL</a>
                         <a href="#">TOP &uarr;</a>
@@ -1081,12 +1078,50 @@
             </article>`;
         }
 
-        function renderShop() {
-            const jump = $("#shopJump");
-            if (jump) {
-                jump.innerHTML = PRODUCTS.map(p => `<a href="#${p.id}">${esc(p.name.replace(/^D09 /, ""))}${p.status === "available" ? "" : " (soon)"}</a>`).join("");
+        /* ---------- PRODUCT CARDS (picture + price only) ---------- */
+        function productCardHtml(p) {
+            const first = p.colors ? p.colors[0] : null;
+            const image = (first && first.img) || p.image || (p.images && p.images[0]);
+            if (p.status !== "available") {
+                return `
+                <div class="featured-card is-soon" aria-label="${esc(p.name)}, coming soon">
+                    <div class="image-container">${imgTag(image, p.name + " — coming soon")}<div class="coming-soon-badge">COMING SOON</div></div>
+                    <div class="featured-meta"><span class="featured-name">${esc(p.name)}</span></div>
+                </div>`;
             }
-            $("#shopSections").innerHTML = PRODUCTS.map(renderShopProduct).join("");
+            return `
+            <a class="featured-card" href="product.html?id=${encodeURIComponent(p.id)}" aria-label="${esc(p.name)}, ${money(p.price)}">
+                <div class="image-container">${imgTag(first.img, `${p.name} in ${first.name}`, first.fit || "cover")}</div>
+                <div class="featured-meta">
+                    <span class="featured-name">${esc(p.name)}</span>
+                    <span class="featured-price">${money(p.price)}</span>
+                </div>
+            </a>`;
+        }
+
+        /* ---------- SHOP ALL: grid of pictures + prices ---------- */
+        function renderShop() {
+            $("#shopSections").innerHTML = `<div class="featured-grid">${PRODUCTS.map(productCardHtml).join("")}</div>`;
+        }
+
+        /* ---------- PRODUCT PAGE: one product, choose colour + size, add to bag ---------- */
+        function renderProductPage() {
+            const box = $("#productPage");
+            const id = new URLSearchParams(window.location.search).get("id");
+            const p = byId[id];
+            if (!p || p.status !== "available") {
+                box.innerHTML = `<div class="product-missing"><h1>PRODUCT NOT FOUND</h1><p>We couldn't find that piece.</p><a href="shop.html" class="button">BACK TO SHOP ALL</a></div>`;
+                return;
+            }
+            document.title = `${p.name} | DISTRICT 09`;
+            box.innerHTML = `<a class="back-link" href="shop.html">&larr; SHOP ALL</a>` + renderShopProduct(p).replace("<h2 ", "<h1 ").replace("</h2>", "</h1>");
+        }
+
+        /* ---------- HOME: AVAILABLE NOW ROW ---------- */
+        function renderFeatured() {
+            const row = $("#featuredRow");
+            if (!row) return;
+            row.innerHTML = PRODUCTS.filter(p => p.status === "available").map(productCardHtml).join("");
         }
 
         /* ---------- CUSTOMER REVIEW PHOTOS (auto slideshow) ---------- */
@@ -1161,6 +1196,8 @@
             renderShippingSections();
             if ($("#productSections")) renderProducts();
             if ($("#shopSections")) renderShop();
+            if ($("#productPage")) renderProductPage();
+            renderFeatured();
             initReviews();
             preloadAvailableColorImages();
             renderCart();
@@ -1168,7 +1205,7 @@
             if (year) year.textContent = new Date().getFullYear();
             updatePaymentModeNotice();
 
-            ["#productSections", "#shopSections"].forEach(sel => {
+            ["#productSections", "#shopSections", "#productPage"].forEach(sel => {
                 const el = $(sel);
                 if (el) el.addEventListener("click", onGridClick);
             });
