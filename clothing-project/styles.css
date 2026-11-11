@@ -557,3 +557,5 @@
         .category-group { margin-bottom: 44px; text-align: left; scroll-margin-top: 90px; }
         .category-title { font-size: 20px; font-weight: 800; letter-spacing: 2px; padding-bottom: 12px; margin-bottom: 20px; border-bottom: 1px solid var(--ink); }
         .category-group .featured-grid { margin-bottom: 0; }
+        .featured-card.is-soon .product-image { filter: blur(7px); transform: scale(1.06); }
+        .featured-card.is-soon .image-container { overflow: hidden; }
