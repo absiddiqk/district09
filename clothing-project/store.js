@@ -35,10 +35,9 @@
             { name: "White",    cls: "white",   key: "white" },
             { name: "Sky Blue", cls: "skyblue", key: "skyblue" },
             { name: "Brown",    cls: "brown",   key: "brown" },
-            { name: "Grey",      cls: "grey",    key: "grey" },
             { name: "Dark Grey", cls: "darkgrey", key: "darkgrey" }
         ];
-        const SWATCH_HEX = { black: "#171717", white: "#ffffff", skyblue: "#8dafc0", brown: "#694a38", grey: "#8e9094", darkgrey: "#38393c", navy: "#172b4d" };
+        const SWATCH_HEX = { black: "#171717", white: "#ffffff", skyblue: "#8dafc0", brown: "#694a38", grey: "#4a4a4a", darkgrey: "#38393c", navy: "#172b4d" };
 
         const shadesFor = prefix => SHADES.map(s => ({ name: s.name, hex: SWATCH_HEX[s.key], img: `${prefix}_${s.key}.jpg` }));
         const signatureColors = [
