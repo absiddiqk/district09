@@ -823,6 +823,10 @@
                         <a href="mailto:bydistrict09@gmail.com">bydistrict09@gmail.com</a>
                     </div>
                     <div>
+                        <h4>AVAILABILITY</h4>
+                        <p>Open 24 hours,<br>every day</p>
+                    </div>
+                    <div>
                         <h4>FOLLOW US</h4>
                         <a href="https://www.instagram.com/district092026" target="_blank" rel="noopener noreferrer">Instagram</a><br>
                         <a href="https://www.tiktok.com/@keepfashnweird" target="_blank" rel="noopener noreferrer">TikTok</a>
@@ -1021,6 +1025,7 @@
                     <div class="shipping-card">
                         <h3>DELIVERY</h3>
                         <p>We deliver to every state in Nigeria. Your delivery fee depends on your state. Choose your state at checkout and the fee is added to your order summary before you pay.</p>
+                        <p>We are available 24 hours a day, every day. Order any time.</p>
                         <details class="fee-details">
                             <summary>SEE DELIVERY FEES BY STATE</summary>
                             <table class="size-table fee-table">
