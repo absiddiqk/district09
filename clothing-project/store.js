@@ -35,9 +35,10 @@
             { name: "White",    cls: "white",   key: "white" },
             { name: "Sky Blue", cls: "skyblue", key: "skyblue" },
             { name: "Brown",    cls: "brown",   key: "brown" },
-            { name: "Dark Grey", cls: "grey",    key: "grey" }
+            { name: "Grey",      cls: "grey",    key: "grey" },
+            { name: "Dark Grey", cls: "darkgrey", key: "darkgrey" }
         ];
-        const SWATCH_HEX = { black: "#171717", white: "#ffffff", skyblue: "#8dafc0", brown: "#694a38", grey: "#4a4a4a", navy: "#172b4d" };
+        const SWATCH_HEX = { black: "#171717", white: "#ffffff", skyblue: "#8dafc0", brown: "#694a38", grey: "#8e9094", darkgrey: "#38393c", navy: "#172b4d" };
 
         const shadesFor = prefix => SHADES.map(s => ({ name: s.name, hex: SWATCH_HEX[s.key], img: `${prefix}_${s.key}.jpg` }));
         const signatureColors = [
@@ -1231,7 +1232,7 @@
             // Pick 7 random (product, colour) combinations from the products that are on sale.
             const combos = [];
             // The white henley photos do not show well on the slideshow background, so it is left out here (it still sells normally).
-            const SKIP = new Set(["short-sleeve-henley|White", "classic-henley|White"]);
+            const SKIP = new Set();
             PRODUCTS.filter(p => p.status === "available").forEach(p => p.colors.forEach((c, ci) => { if (!SKIP.has(p.id + "|" + c.name)) combos.push({ p, c, ci }); }));
             for (let i = combos.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [combos[i], combos[j]] = [combos[j], combos[i]]; }
             // The black long-sleeve henley always opens the slideshow; the rest stay random.

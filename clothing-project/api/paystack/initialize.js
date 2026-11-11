@@ -5,13 +5,13 @@ const CATALOG = {
     name: "D09 Classic Henley",
     price: 25000,
     sizes: ["M", "L"],
-    colors: ["Black", "White", "Sky Blue", "Brown", "Grey"],
+    colors: ["Black", "White", "Sky Blue", "Brown", "Grey", "Dark Grey"],
   },
   "short-sleeve-henley": {
     name: "D09 Short Sleeve Henley",
     price: 25000,
     sizes: ["M", "L"],
-    colors: ["Black", "White", "Sky Blue", "Brown", "Grey"],
+    colors: ["Black", "White", "Sky Blue", "Brown", "Grey", "Dark Grey"],
   },
   "d09-signature-henley": {
     name: "D09 Signature Henley — Long Sleeve",
