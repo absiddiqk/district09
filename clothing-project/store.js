@@ -1233,6 +1233,9 @@
             const SKIP = new Set(["short-sleeve-henley|White", "classic-henley|White"]);
             PRODUCTS.filter(p => p.status === "available").forEach(p => p.colors.forEach((c, ci) => { if (!SKIP.has(p.id + "|" + c.name)) combos.push({ p, c, ci }); }));
             for (let i = combos.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [combos[i], combos[j]] = [combos[j], combos[i]]; }
+            // The black long-sleeve henley always opens the slideshow; the rest stay random.
+            const FIRST = combos.findIndex(x => x.p.id === "classic-henley" && x.c.name === "Black");
+            if (FIRST > 0) combos.unshift(combos.splice(FIRST, 1)[0]);
             const items = combos.slice(0, 7);
             if (!items.length) { slider.hidden = true; return; }
             const track = $("#heroTrack"), dots = $("#heroDots");
