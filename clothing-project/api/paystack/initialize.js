@@ -25,6 +25,62 @@ const CATALOG = {
     sizes: ["M", "L"],
     colors: ["Brown", "Navy Blue"],
   },
+  // Trousers mirror the sizes and colours the storefront offers (store.js PRODUCTS).
+  "plain-trouser": {
+    name: "D09 Plain Trouser",
+    price: 30000,
+    sizes: ["S", "M", "L"],
+    colors: ["Black", "Grey", "Navy Blue", "White"],
+  },
+  "pinstripe-trouser": {
+    name: "D09 Pinstripe Trouser",
+    price: 30000,
+    sizes: ["S", "M", "L"],
+    colors: ["Black", "Grey", "Navy Blue", "White"],
+  },
+};
+
+// Delivery fee per destination, in naira. The server is the source of truth:
+// the fee is added to the amount sent to Paystack, so it cannot be changed from the browser.
+// Keep this list identical to DELIVERY_FEES in store.js (a test checks they match).
+const DELIVERY_FEES = {
+  "Abia": 4500,
+  "Adamawa": 7000,
+  "Akwa Ibom": 6000,
+  "Anambra": 4000,
+  "Bauchi": 5500,
+  "Bayelsa": 6000,
+  "Benue": 5000,
+  "Borno": 8000,
+  "Cross River": 6000,
+  "Delta": 4500,
+  "Ebonyi": 4500,
+  "Edo": 3500,
+  "Ekiti": 5000,
+  "Enugu": 4000,
+  "FCT Abuja": 3500,
+  "Gombe": 6000,
+  "Imo": 4500,
+  "Jigawa": 6500,
+  "Kaduna": 4500,
+  "Kano": 6000,
+  "Katsina": 6500,
+  "Kebbi": 7000,
+  "Kogi": 2000,
+  "Kwara": 5000,
+  "Lagos": 5500,
+  "Nasarawa": 4000,
+  "Niger": 4500,
+  "Ogun": 5500,
+  "Ondo": 4500,
+  "Osun": 5000,
+  "Oyo": 5000,
+  "Plateau": 5500,
+  "Rivers": 5500,
+  "Sokoto": 7500,
+  "Taraba": 7000,
+  "Yobe": 7000,
+  "Zamfara": 7000,
 };
 
 function reply(res, status, payload) {
@@ -93,6 +149,7 @@ module.exports = async (req, res) => {
     const email = String(customer.email || "").trim().toLowerCase().slice(0, 254);
     const phone = String(customer.phone || "").trim().slice(0, 30);
     const city = String(customer.city || "").trim().slice(0, 100);
+    const state = String(customer.state || "").trim();
     const address = String(customer.address || "").trim().slice(0, 500);
     const note = String(customer.note || "None").trim().slice(0, 500);
     const items = body.items;
@@ -103,6 +160,7 @@ module.exports = async (req, res) => {
       !phone ||
       !city ||
       !address ||
+      !Object.prototype.hasOwnProperty.call(DELIVERY_FEES, state) ||
       !Array.isArray(items) ||
       items.length < 1 ||
       items.length > 10
@@ -145,6 +203,10 @@ module.exports = async (req, res) => {
       });
     }
 
+    const productTotalNgn = totalNgn;
+    const deliveryFeeNgn = DELIVERY_FEES[state];
+    totalNgn = productTotalNgn + deliveryFeeNgn;
+
     const expectedAmountKobo = totalNgn * 100;
     if (!Number.isSafeInteger(expectedAmountKobo) || expectedAmountKobo <= 0) {
       return reply(res, 400, { error: "The order total is invalid." });
@@ -183,11 +245,14 @@ module.exports = async (req, res) => {
             expected_amount_kobo: expectedAmountKobo,
             order_total_kobo: expectedAmountKobo,
             order_total_ngn: totalNgn,
+            product_total_ngn: productTotalNgn,
+            delivery_fee_ngn: deliveryFeeNgn,
+            delivery_state: state,
             order_items: orderLines.join("\n"),
             customer_name: name,
             customer_email: email,
             customer_phone: phone,
-            delivery_city_state: city,
+            delivery_city_state: `${city}, ${state}`,
             delivery_address: address,
             customer_notes: note,
             cancel_action: cancelAction.toString(),
@@ -206,6 +271,11 @@ module.exports = async (req, res) => {
                 display_name: "Order items",
                 variable_name: "order_items",
                 value: orderLines.join("; ").slice(0, 1800),
+              },
+              {
+                display_name: "Delivery",
+                variable_name: "delivery",
+                value: `${state} — ₦${deliveryFeeNgn.toLocaleString("en-NG")}`,
               },
             ],
           },
@@ -240,6 +310,9 @@ module.exports = async (req, res) => {
       authorization_url: data.authorization_url,
       reference,
       mode,
+      product_total_ngn: productTotalNgn,
+      delivery_fee_ngn: deliveryFeeNgn,
+      total_ngn: totalNgn,
     });
   } catch (error) {
     console.error(

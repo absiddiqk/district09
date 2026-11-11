@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#f5f3ed">
+    <meta name="description" content="Track your DISTRICT 09 order with your order reference.">
+    <title>Track Your Order | DISTRICT 09</title>
+    <link rel="icon" href="/district09-mark.svg" type="image/svg+xml">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body data-page="track">
+    <a href="#trackForm" class="skip-link">Skip to order lookup</a>
+    <div id="siteHeader"></div>
+
+    <main id="main" class="track">
+        <p class="eyebrow">DISTRICT 09 / ORDERS</p>
+        <h1>TRACK YOUR ORDER</h1>
+        <p class="track-intro">Enter the order reference from your payment confirmation or your Paystack receipt. It starts with <strong>D09-</strong>.</p>
+
+        <form class="track-form" id="trackForm" novalidate>
+            <label class="visually-hidden" for="trackReference">Order reference</label>
+            <input id="trackReference" name="reference" placeholder="D09-..." autocomplete="off" autocapitalize="off" spellcheck="false" required>
+            <button type="submit" class="button" id="trackSubmit">TRACK ORDER</button>
+        </form>
+        <p class="track-help">Can&rsquo;t find your reference? Message us on WhatsApp and we will help.</p>
+
+        <div class="track-result" id="trackResult" aria-live="polite"></div>
+    </main>
+
+    <div id="siteFooter"></div>
+
+    <script src="store.js"></script>
+    <script>
+    (() => {
+        "use strict";
+        const WHATSAPP = "2349139656964";
+        const form = document.getElementById("trackForm");
+        const input = document.getElementById("trackReference");
+        const button = document.getElementById("trackSubmit");
+        const result = document.getElementById("trackResult");
+
+        const esc = v => String(v).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+        const money = n => new Intl.NumberFormat("en-NG", { style: "currency", currency: "NGN", maximumFractionDigits: 0 }).format(n);
+        const whatsappUrl = text => "https://wa.me/" + WHATSAPP + "?text=" + encodeURIComponent(text);
+
+        function card(kind, status, title, body, extra = "") {
+            result.innerHTML = `<div class="track-card ${kind}"><p class="track-status">${esc(status)}</p><h2>${esc(title)}</h2>${body}${extra}</div>`;
+        }
+
+        function help(reference) {
+            return `<div class="track-actions"><a class="button button-secondary" target="_blank" rel="noopener noreferrer" href="${esc(whatsappUrl("Hello District 09, I would like an update on my order. Reference: " + reference))}">ASK ABOUT THIS ORDER ON WHATSAPP</a></div>`;
+        }
+
+        async function lookup(reference) {
+            result.innerHTML = "";
+            button.disabled = true;
+            button.textContent = "CHECKING...";
+            try {
+                const res = await fetch("/api/paystack/track?reference=" + encodeURIComponent(reference), { headers: { "Accept": "application/json" } });
+                let data = {};
+                try { data = await res.json(); } catch { /* handled below */ }
+
+                if (!res.ok) {
+                    card("error", "NOT FOUND", res.status === 404 ? "We could not find that order" : "We could not check this order",
+                        `<p>${esc(data.error || "Please check the reference and try again.")}</p>`, help(reference));
+                } else if (data.status === "paid") {
+                    const lines = (data.items || []).map(l => `<li>${esc(l)}</li>`).join("");
+                    const paid = data.paid_at ? new Date(data.paid_at).toLocaleString("en-NG", { dateStyle: "medium", timeStyle: "short" }) : "";
+                    const totals = [
+                        data.product_total_ngn != null ? `<div><span>Products</span><span>${money(data.product_total_ngn)}</span></div>` : "",
+                        data.delivery_fee_ngn != null ? `<div><span>Delivery${data.delivery_state ? " to " + esc(data.delivery_state) : ""}</span><span>${money(data.delivery_fee_ngn)}</span></div>` : "",
+                        `<div class="grand"><span>Total paid</span><span>${money(data.total_ngn)}</span></div>`
+                    ].join("");
+                    card("", "PAYMENT CONFIRMED", "Your payment has been received",
+                        `<p>Reference: <strong>${esc(data.reference)}</strong>${paid ? "<br>Paid: " + esc(paid) : ""}</p>
+                         <ul class="track-lines">${lines}</ul>
+                         <div class="track-totals">${totals}</div>
+                         <p style="margin-top:14px">We are preparing your order. We send dispatch and delivery updates on WhatsApp or email. Message us with your reference any time for the latest news.</p>`,
+                        help(data.reference));
+                } else if (data.status === "pending") {
+                    card("warn", "PAYMENT PENDING", "Payment not confirmed yet",
+                        `<p>Paystack has not confirmed this payment yet. Please wait a few minutes and check again. If your bank shows a debit, contact us before trying to pay again.</p>`, help(reference));
+                } else if (data.status === "failed") {
+                    card("error", "PAYMENT NOT COMPLETED", "This payment was not completed",
+                        `<p>Paystack did not confirm a successful payment for this reference. If your bank shows a debit, contact us before trying again.</p>`, help(reference));
+                } else {
+                    card("warn", "NEEDS REVIEW", "Please contact the store",
+                        `<p>We need to check this payment by hand. Message us with your reference.</p>`, help(reference));
+                }
+            } catch {
+                card("error", "CONNECTION PROBLEM", "We could not check this order",
+                    `<p>Please check your connection and try again.</p>`, help(reference));
+            } finally {
+                button.disabled = false;
+                button.textContent = "TRACK ORDER";
+            }
+        }
+
+        form.addEventListener("submit", e => {
+            e.preventDefault();
+            const reference = input.value.trim().replace(/^d09-/i, "D09-");
+            if (!/^D09-[A-Za-z0-9-]{8,80}$/.test(reference)) {
+                card("error", "CHECK THE REFERENCE", "That reference doesn't look right",
+                    `<p>It should start with D09- followed by letters and numbers. Copy it exactly from your payment confirmation or Paystack receipt.</p>`);
+                input.focus();
+                return;
+            }
+            input.value = reference;
+            lookup(reference);
+        });
+
+        // Prefill from the payment link, or from the last order placed on this device.
+        const params = new URLSearchParams(window.location.search);
+        let start = params.get("reference") || "";
+        let fromLink = !!start;
+        if (!start) { try { start = localStorage.getItem("d09_last_order_v1") || ""; } catch { /* private mode */ } }
+        if (start) {
+            input.value = start;
+            if (fromLink) form.requestSubmit();
+        }
+    })();
+    </script>
+</body>
+</html>
