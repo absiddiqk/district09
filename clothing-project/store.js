@@ -1124,9 +1124,29 @@
             $(".card-link", card).href = `product.html?id=${encodeURIComponent(p.id)}&color=${idx}`;
         });
 
-        /* ---------- SHOP ALL: grid of pictures + prices ---------- */
+        /* ---------- LABELLED SECTIONS: Henleys / Trousers / Tees / Corporate ---------- */
+        const CATEGORY_LABELS = [
+            { key: "henley", label: "HENLEYS" },
+            { key: "trousers", label: "TROUSERS" },
+            { key: "collar-tees", label: "TEES" },
+            { key: "corporate-shirts", label: "CORPORATE" }
+        ];
+        function groupedGridHtml() {
+            const tabs = `<div class="category-tabs" role="navigation" aria-label="Jump to a category">${CATEGORY_LABELS.map(c => `<a href="#cat-${c.key}">${c.label}</a>`).join("")}</div>`;
+            const groups = CATEGORY_LABELS.map(c => {
+                const items = PRODUCTS.filter(p => p.category === c.key);
+                if (!items.length) return "";
+                return `<section class="category-group" id="cat-${c.key}" aria-labelledby="catt-${c.key}">
+                    <h3 class="category-title" id="catt-${c.key}">${c.label}</h3>
+                    <div class="featured-grid">${items.map(productCardHtml).join("")}</div>
+                </section>`;
+            }).join("");
+            return tabs + groups;
+        }
+
+        /* ---------- SHOP ALL ---------- */
         function renderShop() {
-            $("#shopSections").innerHTML = `<div class="featured-grid">${PRODUCTS.map(productCardHtml).join("")}</div>`;
+            $("#shopSections").innerHTML = groupedGridHtml();
         }
 
         /* ---------- PRODUCT PAGE: one product, choose colour + size, add to bag ---------- */
@@ -1148,7 +1168,7 @@
         function renderFeatured() {
             const row = $("#featuredRow");
             if (!row) return;
-            row.innerHTML = PRODUCTS.map(productCardHtml).join("");
+            row.innerHTML = groupedGridHtml();
         }
 
         /* ---------- CUSTOMER REVIEW PHOTOS (auto slideshow) ---------- */
