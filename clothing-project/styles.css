@@ -628,7 +628,7 @@
    the file to go back to the previous look.
    ===================================================================== */
         :root {
-            --serif: 'Bodoni Moda', 'Didot', 'Playfair Display', Georgia, serif;
+            --serif: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
             --bg: #f4f2ec;
             --sand: #e7e3d8;
             --olive: #5d6643;
@@ -752,3 +752,16 @@
 
         .shop-product .card-cutout { background: #ebe8df; }
         .shop-product .card-cutout .product-image { padding: 6%; mix-blend-mode: normal; }
+
+        /* Headings use the original bold Plus Jakarta Sans */
+        .section-heading h2, .shop-hero h1, .story-content h1, .story-content h2, .newsletter h2,
+        .hero-copy h2, .shop-product-title, .shipping h2, .track h1, .product-missing h1, .modal-card h2 {
+            font-weight: 800; letter-spacing: -.035em; line-height: 1.06;
+        }
+        .category-title { font-weight: 800; letter-spacing: -.03em; }
+        .shipping-card h3 { font-weight: 800; letter-spacing: -.02em; font-size: 20px; }
+        .logo { font-weight: 800; letter-spacing: -.03em; }
+        .logo span { font-weight: 700; }
+        .hero-nav { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 300; }
+        .site-menu a, .site-menu li button { font-weight: 800; letter-spacing: -.02em; font-size: 24px; }
+        .site-menu .site-menu-sub a { font-weight: 500; letter-spacing: .02em; }
