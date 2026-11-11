@@ -622,3 +622,133 @@
         .site-menu .site-menu-sub li { border-bottom: none; }
         .site-menu .site-menu-sub a { padding: 9px 0; font-size: 13px; font-weight: 600; letter-spacing: .8px; color: #5c5952; }
         .site-menu .site-menu-sub a:hover { color: var(--olive); }
+
+/* =====================================================================
+   CLASSY THEME (redesign-classy branch). Delete from here to the end of
+   the file to go back to the previous look.
+   ===================================================================== */
+        :root {
+            --serif: 'Bodoni Moda', 'Didot', 'Playfair Display', Georgia, serif;
+            --bg: #f4f2ec;
+            --sand: #e7e3d8;
+            --olive: #5d6643;
+            --line: #d9d5c9;
+            --line-strong: #b9b4a5;
+            --ink: #16171a;
+            --brass: #a58a52;
+        }
+        body { letter-spacing: .005em; }
+
+        /* Headings: Bodoni, sentence case, light weight */
+        h1, h2, .category-title, .story-title, .hero-copy h2, .shop-product-title, .site-menu a, .logo {
+            font-family: var(--serif); font-optical-sizing: auto;
+        }
+        .section-heading h2, .shop-hero h1, .story-content h1, .story-content h2, .newsletter h2,
+        .hero-copy h2, .shop-product-title, .shipping h2, .track h1, .product-missing h1, .modal-card h2 {
+            font-weight: 500; letter-spacing: -.01em; text-transform: lowercase; line-height: 1.08;
+        }
+        .section-heading h2::first-letter, .shop-hero h1::first-letter, .story-content h1::first-letter,
+        .story-content h2::first-letter, .newsletter h2::first-letter, .hero-copy h2::first-letter,
+        .shop-product-title::first-letter, .shipping h2::first-letter, .track h1::first-letter,
+        .product-missing h1::first-letter, .modal-card h2::first-letter { text-transform: uppercase; }
+        .story-title br { display: none; }
+        .section-heading h2 { font-size: clamp(30px, 4vw, 44px); }
+        .shop-hero h1 { font-size: clamp(36px, 5.4vw, 60px); }
+        .story-content h1, .story-content h2 { font-size: clamp(30px, 4.4vw, 52px); }
+        .shop-product-title { font-size: clamp(30px, 3.8vw, 46px); letter-spacing: -.015em; }
+
+        /* The small caps labels above headings add noise; keep the page quiet */
+        .section-heading .eyebrow, .shop-hero .eyebrow, .story-content .eyebrow, .track > .eyebrow,
+        .hero-copy .eyebrow, .shipping .eyebrow { display: none; }
+
+        /* Header and announcement */
+        .announcement { font-size: 10px; letter-spacing: .28em; font-weight: 600; padding: 9px 16px; }
+        header { background: rgba(244,242,236,.92); }
+        nav { padding: 14px 28px; }
+        .logo { font-size: 22px; font-weight: 600; letter-spacing: .01em; }
+        .logo span { font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: .3em; font-size: 8px; font-weight: 600; margin-left: 10px; }
+        .bag-count { background: var(--brass); color: #fff; }
+
+        /* Buttons: quiet, wide-tracked */
+        .button { padding: 15px 34px; font-size: 11px; font-weight: 600; letter-spacing: .22em; text-transform: uppercase; }
+        .button:hover:not(:disabled) { background: transparent; color: var(--ink); border-color: var(--ink); }
+        .button-secondary:hover:not(:disabled) { background: var(--ink); color: #fff; }
+        .add-to-bag-btn { letter-spacing: .22em; font-weight: 600; }
+
+        /* Slideshow: lighter chrome, line indicators, serif headline */
+        .hero-slider { background: linear-gradient(180deg, #ebe8de 0%, #e2ddd0 100%); }
+        .hero-copy h2 { font-size: clamp(30px, 4vw, 52px); }
+        .hero-price { font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: .26em; font-size: 11px; font-weight: 600; color: var(--olive); }
+        .hero-photo img { filter: drop-shadow(0 18px 26px rgba(30,25,15,.22)); }
+        .hero-nav { background: transparent; border: none; width: 44px; height: 44px; font-size: 38px; font-weight: 300; font-family: var(--serif); }
+        .hero-nav:hover { color: var(--olive); }
+        .hero-dots { gap: 8px; }
+        .hero-dot { width: 26px; height: 2px; border: none; border-radius: 0; background: rgba(22,23,26,.25); box-shadow: none; transition: background .3s, width .3s; }
+        .hero-dot.is-active { width: 44px; background: var(--ink); box-shadow: none; }
+
+        /* Collection: category headings as editorial section titles */
+        .featured { padding-top: 84px; }
+        .featured .section-heading { margin-bottom: 52px; }
+        .category-group { margin-bottom: 72px; }
+        .category-title {
+            font-size: clamp(26px, 3vw, 34px); font-weight: 500; letter-spacing: -.005em; text-transform: lowercase;
+            border-bottom: 1px solid var(--line-strong); padding-bottom: 14px; margin-bottom: 28px;
+        }
+        .category-title::first-letter { text-transform: uppercase; }
+        .featured-grid { gap: 34px 26px; }
+
+        /* Product cards: borderless photo on stone, calm type */
+        .image-container { border: none; background: #ebe8df; margin-bottom: 16px; }
+        .product-image { background: transparent; mix-blend-mode: multiply; }
+        .featured-card .image-container { margin-bottom: 14px; }
+        .featured-meta { font-size: 13px; font-weight: 500; letter-spacing: .01em; align-items: baseline; }
+        .featured-price { font-weight: 500; color: var(--muted); font-variant-numeric: tabular-nums; }
+        .card-swatches { margin-top: 12px; }
+        .swatch { box-shadow: inset 0 0 0 1px rgba(0,0,0,.12); }
+        .coming-soon-badge, .featured-card .coming-soon-badge { letter-spacing: .22em; font-weight: 600; font-size: 9px; }
+
+        /* Product page */
+        .shop-product-price { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 500; font-size: 18px; letter-spacing: .02em; color: var(--muted); }
+        .option-label { letter-spacing: .12em; font-weight: 600; }
+        .size-pill { border-radius: 0; }
+        .back-link { letter-spacing: .22em; font-weight: 600; }
+
+        /* About */
+        .brand-story { background: var(--sand); padding: 96px 24px; }
+        .story-content p { font-size: 15px; line-height: 1.75; color: #55524a; }
+        .shipping-card { background: transparent; border: none; border-top: 1px solid var(--line-strong); padding: 24px 0 0; }
+        .shipping-card h3 { font-family: var(--serif); font-size: 22px; font-weight: 500; letter-spacing: 0; text-transform: lowercase; }
+        .shipping-card h3::first-letter { text-transform: uppercase; }
+        .about-details { gap: 48px; }
+
+        /* Newsletter and footer */
+        .newsletter { padding: 84px 24px; }
+        .newsletter h2 { font-size: clamp(26px, 3.4vw, 36px); }
+        .newsletter-form input { background: #fff; border-color: var(--line-strong); }
+        footer { padding: 52px 28px 40px; }
+        footer .logo { font-size: 22px; }
+        .footer-links a, .footer-links button { letter-spacing: .16em; font-weight: 600; }
+        .footer-contact h4 { letter-spacing: .22em; }
+
+        /* Menu drawer */
+        .site-menu a, .site-menu li button { font-family: var(--serif); font-size: 26px; font-weight: 500; letter-spacing: 0; text-transform: none; padding: 16px 0; }
+        .site-menu .site-menu-sub a { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 13px; font-weight: 500; letter-spacing: .06em; padding: 8px 0; }
+        .site-menu-head { letter-spacing: .28em; font-weight: 600; }
+
+        /* Modals */
+        .modal-card h2 { font-size: 30px; }
+
+        @media (max-width: 680px) {
+            .logo { font-size: 19px; }
+            .logo span { letter-spacing: .22em; margin-left: 6px; }
+            .featured { padding-top: 56px; }
+            .category-group { margin-bottom: 52px; }
+            .hero-copy h2 { font-size: 26px; }
+            .site-menu a, .site-menu li button { font-size: 24px; }
+        }
+
+        .featured-card .card-cutout { background: #ebe8df; }
+        .featured-card .card-cutout .product-image { padding: 7% 6%; mix-blend-mode: normal; }
+
+        .shop-product .card-cutout { background: #ebe8df; }
+        .shop-product .card-cutout .product-image { padding: 6%; mix-blend-mode: normal; }

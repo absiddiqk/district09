@@ -286,7 +286,16 @@
                 addButton.textContent = comingSoon ? "COMING SOON" : "ADD TO BAG";
             }
             // Swap immediately; browser cache is warmed for available variants during idle time.
-            image.src = color.img;
+            if (card.closest("#productPage") && !comingSoon) {
+                // Single-product page: show the background-free cutout, falling back to the original photo.
+                image.dataset.fallback = color.img; image.dataset.fit = color.fit || "cover";
+                image.onerror = function () { this.onerror = null; this.src = this.dataset.fallback; this.style.objectFit = this.dataset.fit; this.parentNode.classList.remove("card-cutout"); };
+                imageContainer.classList.add("card-cutout");
+                image.style.objectFit = "contain";
+                image.src = cutoutSrc(color.img);
+            } else {
+                image.src = color.img;
+            }
         }
 
         function setSize(card, p, size) {
@@ -1118,6 +1127,8 @@
         }
 
         /* ---------- PRODUCT CARDS (picture + price only) ---------- */
+        // Cards show the background-free cutout of each colour (falls back to the original photo).
+        const cutoutSrc = img => "cutouts/" + img.replace(/\.jpg$/, "") + ".webp";
         function productCardHtml(p) {
             const first = p.colors ? p.colors[0] : null;
             const image = (first && first.img) || p.image || (p.images && p.images[0]);
@@ -1135,7 +1146,7 @@
             return `
             <div class="featured-card" data-card-id="${esc(p.id)}">
                 <a class="card-link" href="product.html?id=${encodeURIComponent(p.id)}" aria-label="${esc(p.name)}, ${money(p.price)}">
-                    <div class="image-container">${imgTag(first.img, `${p.name} in ${first.name}`, first.fit || "cover")}</div>
+                    <div class="image-container card-cutout"><img src="${esc(cutoutSrc(first.img))}" alt="${esc(`${p.name} in ${first.name}`)}" class="product-image" style="object-fit:contain" loading="lazy" width="600" height="800" data-fallback="${esc(first.img)}" data-fit="${first.fit || "cover"}" onerror="this.onerror=null;this.src=this.dataset.fallback;this.style.objectFit=this.dataset.fit;this.parentNode.classList.remove('card-cutout')"></div>
                     <div class="featured-meta">
                         <span class="featured-name">${esc(p.name)}</span>
                         <span class="featured-price">${money(p.price)}</span>
@@ -1155,9 +1166,11 @@
             const c = p.colors[idx];
             if (!c) return;
             const img = $(".product-image", card);
-            img.onerror = function () { this.onerror = null; this.src = PLACEHOLDER_IMG; };
-            img.src = c.img;
-            img.style.objectFit = c.fit || "cover";
+            img.dataset.fallback = c.img; img.dataset.fit = c.fit || "cover";
+            img.onerror = function () { this.onerror = null; this.src = this.dataset.fallback; this.style.objectFit = this.dataset.fit; this.parentNode.classList.remove("card-cutout"); };
+            card.querySelector(".image-container").classList.add("card-cutout");
+            img.src = cutoutSrc(c.img);
+            img.style.objectFit = "contain";
             img.alt = `${p.name} in ${c.name}`;
             $$("[data-card-color]", card).forEach(d => d.setAttribute("aria-pressed", String(d === dot)));
             $(".card-link", card).href = `product.html?id=${encodeURIComponent(p.id)}&color=${idx}`;
@@ -1200,6 +1213,7 @@
             if (Number.isInteger(wanted) && wanted >= 0 && wanted < p.colors.length) selection[p.id].color = wanted;
             document.title = `${p.name} | DISTRICT 09`;
             box.innerHTML = `<a class="back-link" href="shop.html">&larr; SHOP ALL</a>` + renderShopProduct(p).replace("<h2 ", "<h1 ").replace("</h2>", "</h1>");
+            setColor(box.querySelector(".product-card"), p, selection[p.id].color);
         }
 
         /* ---------- HOME: AVAILABLE NOW ROW ---------- */
