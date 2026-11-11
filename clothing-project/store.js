@@ -755,7 +755,7 @@
 
                     <ul class="nav-links">
                         <li><a href="shop.html">SHOP ALL</a></li>
-                        <li><a href="about.html">ABOUT US</a></li>
+                        <li><a href="index.html#about">ABOUT US</a></li>
                         <li><button type="button" class="nav-link-button" data-open="contactModal" aria-haspopup="dialog">CONTACT US</button></li>
                     </ul>
 
@@ -773,7 +773,7 @@
                     <div class="footer-links">
                         <a href="shop.html">SHOP</a>
                         <button type="button" data-open="sizeGuideModal">SIZE GUIDE</button>
-                        <a href="about.html">ABOUT</a>
+                        <a href="index.html#about">ABOUT</a>
                         <a href="shipping.html">SHIPPING &amp; RETURNS</a>
                         <a href="track.html">TRACK ORDER</a>
                         <a href="mailto:bydistrict09@gmail.com">EMAIL</a>
@@ -1043,7 +1043,7 @@
 
             const sel = selection[p.id];
             const single = p.colors.length === 1;
-            const first = p.colors[0];
+            const first = p.colors[sel.color] || p.colors[0];
             return `
             <article class="shop-product product-card is-available" id="${p.id}" data-category="${p.category}" data-id="${p.id}" aria-label="${esc(p.name)}">
                 <div class="shop-product-media">
@@ -1089,15 +1089,40 @@
                     <div class="featured-meta"><span class="featured-name">${esc(p.name)}</span></div>
                 </div>`;
             }
+            const swatches = p.colors.length > 1 ? `
+                <div class="color-swatches card-swatches" role="group" aria-label="${esc(p.name)} colours">
+                    ${p.colors.map((c, idx) => `<button type="button" class="swatch" data-card-color="${idx}" style="background:${c.hex}" aria-label="${esc(c.name)}" title="${esc(c.name)}" aria-pressed="${idx === 0}"></button>`).join("")}
+                </div>` : "";
             return `
-            <a class="featured-card" href="product.html?id=${encodeURIComponent(p.id)}" aria-label="${esc(p.name)}, ${money(p.price)}">
-                <div class="image-container">${imgTag(first.img, `${p.name} in ${first.name}`, first.fit || "cover")}</div>
-                <div class="featured-meta">
-                    <span class="featured-name">${esc(p.name)}</span>
-                    <span class="featured-price">${money(p.price)}</span>
-                </div>
-            </a>`;
+            <div class="featured-card" data-card-id="${esc(p.id)}">
+                <a class="card-link" href="product.html?id=${encodeURIComponent(p.id)}" aria-label="${esc(p.name)}, ${money(p.price)}">
+                    <div class="image-container">${imgTag(first.img, `${p.name} in ${first.name}`, first.fit || "cover")}</div>
+                    <div class="featured-meta">
+                        <span class="featured-name">${esc(p.name)}</span>
+                        <span class="featured-price">${money(p.price)}</span>
+                    </div>
+                </a>${swatches}
+            </div>`;
         }
+
+        // Colour dots on a card change the picture and the link, without leaving the page.
+        document.addEventListener("click", e => {
+            const dot = e.target.closest("[data-card-color]");
+            if (!dot) return;
+            const card = dot.closest("[data-card-id]");
+            const p = card && byId[card.dataset.cardId];
+            if (!p) return;
+            const idx = Number(dot.dataset.cardColor);
+            const c = p.colors[idx];
+            if (!c) return;
+            const img = $(".product-image", card);
+            img.onerror = function () { this.onerror = null; this.src = PLACEHOLDER_IMG; };
+            img.src = c.img;
+            img.style.objectFit = c.fit || "cover";
+            img.alt = `${p.name} in ${c.name}`;
+            $$("[data-card-color]", card).forEach(d => d.setAttribute("aria-pressed", String(d === dot)));
+            $(".card-link", card).href = `product.html?id=${encodeURIComponent(p.id)}&color=${idx}`;
+        });
 
         /* ---------- SHOP ALL: grid of pictures + prices ---------- */
         function renderShop() {
@@ -1113,6 +1138,8 @@
                 box.innerHTML = `<div class="product-missing"><h1>PRODUCT NOT FOUND</h1><p>We couldn't find that piece.</p><a href="shop.html" class="button">BACK TO SHOP ALL</a></div>`;
                 return;
             }
+            const wanted = Number(new URLSearchParams(window.location.search).get("color"));
+            if (Number.isInteger(wanted) && wanted >= 0 && wanted < p.colors.length) selection[p.id].color = wanted;
             document.title = `${p.name} | DISTRICT 09`;
             box.innerHTML = `<a class="back-link" href="shop.html">&larr; SHOP ALL</a>` + renderShopProduct(p).replace("<h2 ", "<h1 ").replace("</h2>", "</h1>");
         }
@@ -1121,7 +1148,7 @@
         function renderFeatured() {
             const row = $("#featuredRow");
             if (!row) return;
-            row.innerHTML = PRODUCTS.filter(p => p.status === "available").map(productCardHtml).join("");
+            row.innerHTML = PRODUCTS.map(productCardHtml).join("");
         }
 
         /* ---------- CUSTOMER REVIEW PHOTOS (auto slideshow) ---------- */

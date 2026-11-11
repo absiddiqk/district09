@@ -544,3 +544,9 @@
         .product-missing { text-align: center; padding: 70px 0; }
         .product-missing h1 { font-size: 28px; margin-bottom: 10px; }
         .product-missing .button { margin-top: 18px; }
+
+        .card-link { display: flex; flex-direction: column; color: inherit; }
+        .card-link:hover .image-container { transform: translateY(-3px); }
+        .card-link .image-container { margin-bottom: 12px; transition: transform .25s; }
+        .card-swatches { margin-top: 10px; padding-left: 4px; }
+        .featured { padding-bottom: 80px; }
