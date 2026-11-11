@@ -1180,23 +1180,26 @@
         function initHeroSlider() {
             const slider = $("#heroSlider");
             if (!slider) return;
-            const items = PRODUCTS.filter(p => p.status === "available");
+            // Pick 7 random (product, colour) combinations from the products that are on sale.
+            const combos = [];
+            PRODUCTS.filter(p => p.status === "available").forEach(p => p.colors.forEach((c, ci) => combos.push({ p, c, ci })));
+            for (let i = combos.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [combos[i], combos[j]] = [combos[j], combos[i]]; }
+            const items = combos.slice(0, 7);
             if (!items.length) { slider.hidden = true; return; }
             const track = $("#heroTrack"), dots = $("#heroDots");
-            track.innerHTML = items.map((p, i) => {
-                const c = p.colors[0];
+            track.innerHTML = items.map(({ p, c, ci }, i) => {
                 return `
                 <article class="hero-slide${i === 0 ? " is-active" : ""}" aria-hidden="${i === 0 ? "false" : "true"}" aria-label="${i + 1} of ${items.length}">
                     <div class="hero-copy">
                         <p class="eyebrow">DISTRICT 09 / AVAILABLE NOW</p>
                         <h2>${esc(p.name)}</h2>
-                        <p class="hero-price">${money(p.price)}</p>
-                        <a class="button" href="product.html?id=${encodeURIComponent(p.id)}" ${i === 0 ? "" : 'tabindex="-1"'}>SHOP NOW</a>
+                        <p class="hero-price">${esc(c.name)}</p>
+                        <a class="button" href="product.html?id=${encodeURIComponent(p.id)}&color=${ci}" ${i === 0 ? "" : 'tabindex="-1"'}>SHOP NOW</a>
                     </div>
                     <div class="hero-photo"><img src="${esc(c.img)}" alt="${esc(p.name + " in " + c.name)}" style="object-fit:${c.fit || "contain"}" ${i === 0 ? 'fetchpriority="high"' : 'loading="lazy"'} onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'"></div>
                 </article>`;
             }).join("");
-            dots.innerHTML = items.map((p, i) => `<button type="button" class="hero-dot${i === 0 ? " is-active" : ""}" data-index="${i}" aria-label="Show ${esc(p.name)}"></button>`).join("");
+            dots.innerHTML = items.map(({ p, c }, i) => `<button type="button" class="hero-dot${i === 0 ? " is-active" : ""}" data-index="${i}" aria-label="Show ${esc(p.name)} in ${esc(c.name)}"></button>`).join("");
 
             const slides = $$(".hero-slide", track), dotButtons = $$(".hero-dot", dots);
             const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
