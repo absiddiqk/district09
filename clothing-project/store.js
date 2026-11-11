@@ -1182,7 +1182,9 @@
             if (!slider) return;
             // Pick 7 random (product, colour) combinations from the products that are on sale.
             const combos = [];
-            PRODUCTS.filter(p => p.status === "available").forEach(p => p.colors.forEach((c, ci) => combos.push({ p, c, ci })));
+            // The white short sleeve photo does not show well on the slideshow background, so it is left out here (it still sells normally).
+            const SKIP = new Set(["short-sleeve-henley|White"]);
+            PRODUCTS.filter(p => p.status === "available").forEach(p => p.colors.forEach((c, ci) => { if (!SKIP.has(p.id + "|" + c.name)) combos.push({ p, c, ci }); }));
             for (let i = combos.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [combos[i], combos[j]] = [combos[j], combos[i]]; }
             const items = combos.slice(0, 7);
             if (!items.length) { slider.hidden = true; return; }
