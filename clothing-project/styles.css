@@ -813,3 +813,12 @@
             .hero-copy h2 { font-size: clamp(26px, 7vw, 32px); }
             .site-menu a, .site-menu li button { font-size: 15px; }
         }
+
+/* Product cards: name on its own line, price on the line below */
+        .featured-meta { flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 4px; }
+        .featured-name { line-height: 1.3; }
+        .featured-price { color: var(--ink); font-weight: 700; }
+        /* Name stays on one line: the text scales with the card width */
+        .featured-card { container-type: inline-size; }
+        .featured-name { white-space: nowrap; font-size: min(13px, 5.1cqw); letter-spacing: -.005em; }
+        .featured-price { font-size: min(14px, 5.6cqw); }
