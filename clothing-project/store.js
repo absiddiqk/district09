@@ -778,7 +778,15 @@
                     </div>
                     <ul>
                         <li><a href="index.html">HOME</a></li>
-                        <li><a href="shop.html">SHOP ALL</a></li>
+                        <li>
+                            <a href="shop.html">SHOP ALL</a>
+                            <ul class="site-menu-sub" aria-label="Shop by category">
+                                <li><a href="shop.html#cat-henley">Henley</a></li>
+                                <li><a href="shop.html#cat-trousers">Trousers</a></li>
+                                <li><a href="shop.html#cat-collar-tees">Collar T-Shirt</a></li>
+                                <li><a href="shop.html#cat-corporate-shirts">Corporate Shirts</a></li>
+                            </ul>
+                        </li>
                         <li><button type="button" data-open="sizeGuideModal" aria-haspopup="dialog">SIZE GUIDE</button></li>
                         <li><button type="button" data-open="contactModal" aria-haspopup="dialog">CONTACT US</button></li>
                         <li><a href="shipping.html">SHIPPING &amp; RETURNS</a></li>
@@ -1158,7 +1166,6 @@
             { key: "corporate-shirts", label: "CORPORATE SHIRTS" }
         ];
         function groupedGridHtml() {
-            const tabs = `<div class="category-tabs" role="navigation" aria-label="Jump to a category">${CATEGORY_LABELS.map(c => `<a href="#cat-${c.key}">${c.label}</a>`).join("")}</div>`;
             const groups = CATEGORY_LABELS.map(c => {
                 const items = PRODUCTS.filter(p => p.category === c.key);
                 if (!items.length) return "";
@@ -1167,7 +1174,7 @@
                     <div class="featured-grid">${items.map(productCardHtml).join("")}</div>
                 </section>`;
             }).join("");
-            return tabs + groups;
+            return groups;
         }
 
         /* ---------- SHOP ALL ---------- */
@@ -1354,7 +1361,7 @@
             menuBtn.addEventListener("click", () => setMenu(!menu.classList.contains("open")));
             $("#menuClose").addEventListener("click", () => setMenu(false));
             backdrop.addEventListener("click", () => setMenu(false));
-            menu.addEventListener("click", e => { if (e.target.closest("a, ul button")) setMenu(false); });
+            menu.addEventListener("click", e => { if (e.target.closest("a, li > button")) setMenu(false); });
             document.addEventListener("keydown", e => { if (e.key === "Escape" && menu.classList.contains("open")) setMenu(false); });
 
             // generic modal openers / closers

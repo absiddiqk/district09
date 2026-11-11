@@ -617,3 +617,8 @@
             .hero-copy .button { padding: 12px 26px; }
             .hero-nav { top: 100px; }
         }
+
+        .site-menu .site-menu-sub { margin: -6px 0 14px; padding-left: 14px; border-left: 2px solid var(--line); }
+        .site-menu .site-menu-sub li { border-bottom: none; }
+        .site-menu .site-menu-sub a { padding: 9px 0; font-size: 13px; font-weight: 600; letter-spacing: .8px; color: #5c5952; }
+        .site-menu .site-menu-sub a:hover { color: var(--olive); }
