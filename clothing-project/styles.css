@@ -520,7 +520,7 @@
         /* Home: available now row */
         .featured { max-width: 1240px; margin: auto; padding: 70px 24px 60px; text-align: center; }
         .featured .section-heading { margin-bottom: 28px; }
-        .featured-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 22px; text-align: left; margin-bottom: 34px; }
+        .featured-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 22px; text-align: left; margin-bottom: 34px; }
         .featured-card { display: flex; flex-direction: column; color: inherit; }
         .featured-card .image-container { margin-bottom: 12px; transition: transform .25s; }
         .featured-card:hover .image-container { transform: translateY(-3px); }
