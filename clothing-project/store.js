@@ -60,7 +60,7 @@
             { name: "Navy Blue", hex: SWATCH_HEX.navy, img: "striped_navybluepants.jpg", fit: "contain" },
             { name: "White", hex: SWATCH_HEX.white, img: "striped_whitepants.jpg", fit: "contain" }
         ];
-        const trouserSizes = ["S", "M", "L"];
+        const trouserSizes = ["30", "32", "34", "36"];
 
         const PRODUCTS = [
             { id: "classic-henley", category: "henley", group: "classic", status: "available", name: "D09 Classic Henley — Long Sleeve",
@@ -75,10 +75,10 @@
               tag: "COMING SOON", image: "special_short2.jpg", note: "The Signature Short Sleeve Henley is on the way.", waitlist: "GET DROP UPDATES" },
             { id: "plain-trouser", category: "trousers", group: "trousers", status: "available", name: "D09 Plain Trouser",
               tag: "PLAIN TROUSER", price: 30000, sizes: trouserSizes, colors: plainTrouserColors,
-              note: "Available in sizes S, M, and L." },
+              note: "Available in waist sizes 30, 32, 34 and 36." },
             { id: "pinstripe-trouser", category: "trousers", group: "trousers", status: "available", name: "D09 Pinstripe Trouser",
               tag: "PINSTRIPE TROUSER", price: 30000, sizes: trouserSizes, colors: stripedTrouserColors,
-              note: "Available in sizes S, M, and L." },
+              note: "Available in waist sizes 30, 32, 34 and 36." },
             { id: "d09-collar-tees", category: "collar-tees", group: "collar-tees", status: "soon", name: "D09 Collar Tees",
               tag: "COMING SOON", image: "collar_tee.jpg", note: "A new Collar Tee collection is on the way.", waitlist: "GET DROP UPDATES" },
             { id: "d09-corporate-shirts", category: "corporate-shirts", group: "corporate-shirts", status: "soon", name: "D09 Corporate Shirts",
@@ -255,7 +255,7 @@
             const groups = [
                 { id: "classic", category: "henley", title: "CLASSIC HENLEYS", note: "Choose long sleeve or short sleeve. Each style has the same easy-to-shop color and size options." },
                 { id: "signature", category: "henley", title: "SIGNATURE HENLEYS", note: "The signature fit is available in long sleeve and short sleeve, in Brown or Navy Blue." },
-                { id: "trousers", category: "trousers", title: "CORPORATE TROUSERS", note: "Plain and pinstripe styles from ₦30,000. Plain colors: Black, Grey, Navy Blue, and White. Pinstripe colors: Navy Blue, Grey, and White. Sizes S, M, and L." },
+                { id: "trousers", category: "trousers", title: "CORPORATE TROUSERS", note: "Plain and pinstripe styles from ₦30,000. Plain colors: Black, Grey, Navy Blue, and White. Pinstripe colors: Navy Blue, Grey, and White. Waist sizes 30, 32, 34 and 36." },
                 { id: "collar-tees", category: "collar-tees", title: "COLLAR TEES", note: "A new Collar Tee collection is on the way. Sign up for updates when it arrives." },
                 { id: "corporate-shirts", category: "corporate-shirts", title: "CORPORATE SHIRTS", note: "A new Corporate Shirt collection is on the way. Sign up for updates when it arrives." }
             ];
@@ -367,7 +367,10 @@
         function renderCart() {
             saveBag();
             const empty = bag.length === 0;
-            $("#cartBadge").textContent = `BAG (${bagCount()})`;
+            const count = bagCount();
+            $("#cartCount").textContent = count;
+            $("#cartCount").hidden = count === 0;
+            $("#cartBadge").setAttribute("aria-label", `Bag, ${count} item${count === 1 ? "" : "s"}`);
             $("#cartTotal").textContent = money(bagTotal());
             $("#cartCheckoutBtn").disabled = empty;
             $("#cartWhatsAppBtn").disabled = empty;
@@ -753,17 +756,35 @@
                 <nav aria-label="Main">
                     <a href="index.html" class="logo">DISTRICT 09 <span>COLLECTION</span></a>
 
-                    <ul class="nav-links">
-                        <li><a href="shop.html">SHOP ALL</a></li>
-                        <li><a href="index.html#about">ABOUT US</a></li>
-                        <li><button type="button" class="nav-link-button" data-open="contactModal" aria-haspopup="dialog">CONTACT US</button></li>
-                    </ul>
-
                     <div class="nav-actions">
-                        <button type="button" class="size-guide-trigger" data-open="sizeGuideModal">SIZE GUIDE</button>
-                        <button type="button" class="bag" id="cartBadge" data-open="cartModal" aria-haspopup="dialog">BAG (0)</button>
+                        <button type="button" class="bag" id="cartBadge" data-open="cartModal" aria-haspopup="dialog" aria-label="Bag, 0 items">
+                            <svg class="bag-icon" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8h14l-1.2 12H6.2L5 8z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/></svg>
+                            <span class="bag-count" id="cartCount" aria-hidden="true">0</span>
+                        </button>
+                        <button type="button" class="menu-button" id="menuButton" aria-expanded="false" aria-controls="siteMenu" aria-label="Open menu">
+                            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+                        </button>
                     </div>
                 </nav>`;
+
+            // The menu sits outside <header> (its blur effect would otherwise trap a fixed panel).
+            const menuLayer = document.createElement("div");
+            menuLayer.innerHTML = `
+                <div class="site-menu-backdrop" id="menuBackdrop" hidden></div>
+                <aside class="site-menu" id="siteMenu" aria-label="Menu" aria-hidden="true">
+                    <div class="site-menu-head">
+                        <span>MENU</span>
+                        <button type="button" class="site-menu-close" id="menuClose" aria-label="Close menu">&times;</button>
+                    </div>
+                    <ul>
+                        <li><a href="index.html">HOME</a></li>
+                        <li><a href="shop.html">SHOP ALL</a></li>
+                        <li><button type="button" data-open="sizeGuideModal" aria-haspopup="dialog">SIZE GUIDE</button></li>
+                        <li><button type="button" data-open="contactModal" aria-haspopup="dialog">CONTACT US</button></li>
+                        <li><a href="shipping.html">SHIPPING &amp; RETURNS</a></li>
+                    </ul>
+                </aside>`;
+
 
             const footer = document.createElement("footer");
             footer.innerHTML = `
@@ -801,7 +822,7 @@
                 </div>`;
 
             const headerSlot = $("#siteHeader");
-            if (headerSlot) headerSlot.replaceWith(announcement, header);
+            if (headerSlot) headerSlot.replaceWith(announcement, header, menuLayer);
             const footerSlot = $("#siteFooter");
             if (footerSlot) footerSlot.replaceWith(footer);
         }
@@ -856,7 +877,7 @@
                 </tbody>
             </table>
 
-            <h3 class="modal-subhead">2. Corporate Trousers (Upcoming Drop)</h3>
+            <h3 class="modal-subhead">2. Trousers (by waist size)</h3>
             <table class="size-table">
                 <thead><tr><th scope="col">Waist Size</th><th scope="col">Waist</th><th scope="col">Hips</th><th scope="col">Inseam</th></tr></thead>
                 <tbody>
@@ -1026,7 +1047,7 @@
                     <tbody>${HENLEY_SIZES.map(r => `<tr><th scope="row">${r.size}</th><td>${r.chest}</td><td>${r.shoulder}</td><td>${r.length}</td></tr>`).join("")}</tbody>
                 </table>`;
             }
-            return `<p class="product-note">Available in sizes ${esc(p.sizes.join(", "))}. Open the size guide for full measurements.</p>`;
+            return `<p class="product-note">Available in ${p.category === "trousers" ? "waist " : ""}sizes ${esc(p.sizes.join(", "))}. Open the size guide for full measurements.</p>`;
         }
 
         function renderShopProduct(p) {
@@ -1068,8 +1089,8 @@
                             </div>
                         </div>
                         <div class="option-row">
-                            <span class="option-label">Size: <b class="current-size">${esc(sel.size)}</b></span>
-                            <div class="size-pills" role="group" aria-label="${esc(p.name)} size">
+                            <span class="option-label">${p.category === "trousers" ? "Waist" : "Size"}: <b class="current-size">${esc(sel.size)}</b></span>
+                            <div class="size-pills" role="group" aria-label="${esc(p.name)} ${p.category === "trousers" ? "waist size" : "size"}">
                                 ${p.sizes.map(s => `<button type="button" class="size-pill" data-action="size" data-size="${s}" aria-pressed="${s === sel.size}">${s}</button>`).join("")}
                             </div>
                         </div>
@@ -1319,6 +1340,22 @@
             // filters
             $$(".filter-btn").forEach(b => b.addEventListener("click", () => filterCategory(b.dataset.filter)));
             $$("[data-filter-link]").forEach(a => a.addEventListener("click", () => filterCategory(a.dataset.filterLink)));
+
+            // side menu
+            const menu = $("#siteMenu"), menuBtn = $("#menuButton"), backdrop = $("#menuBackdrop");
+            function setMenu(open) {
+                menu.classList.toggle("open", open);
+                backdrop.hidden = !open;
+                menu.setAttribute("aria-hidden", String(!open));
+                menuBtn.setAttribute("aria-expanded", String(open));
+                menuBtn.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+                if (open) $("a, button", menu.querySelector("ul")).focus(); else if (document.activeElement && menu.contains(document.activeElement)) menuBtn.focus();
+            }
+            menuBtn.addEventListener("click", () => setMenu(!menu.classList.contains("open")));
+            $("#menuClose").addEventListener("click", () => setMenu(false));
+            backdrop.addEventListener("click", () => setMenu(false));
+            menu.addEventListener("click", e => { if (e.target.closest("a, ul button")) setMenu(false); });
+            document.addEventListener("keydown", e => { if (e.key === "Escape" && menu.classList.contains("open")) setMenu(false); });
 
             // generic modal openers / closers
             document.addEventListener("click", e => {

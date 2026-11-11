@@ -29,13 +29,13 @@ const CATALOG = {
   "plain-trouser": {
     name: "D09 Plain Trouser",
     price: 30000,
-    sizes: ["S", "M", "L"],
+    sizes: ["30", "32", "34", "36"],
     colors: ["Black", "Grey", "Navy Blue", "White"],
   },
   "pinstripe-trouser": {
     name: "D09 Pinstripe Trouser",
     price: 30000,
-    sizes: ["S", "M", "L"],
+    sizes: ["30", "32", "34", "36"],
     colors: ["Black", "Grey", "Navy Blue", "White"],
   },
 };
