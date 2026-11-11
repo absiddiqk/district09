@@ -1196,7 +1196,7 @@
                         <p class="hero-price">${esc(c.name)}</p>
                         <a class="button" href="product.html?id=${encodeURIComponent(p.id)}&color=${ci}" ${i === 0 ? "" : 'tabindex="-1"'}>SHOP NOW</a>
                     </div>
-                    <div class="hero-photo"><img src="${esc(c.img)}" alt="${esc(p.name + " in " + c.name)}" style="object-fit:${c.fit || "contain"}" ${i === 0 ? 'fetchpriority="high"' : 'loading="lazy"'} onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'"></div>
+                    <div class="hero-photo"><img src="cutouts/${esc(c.img.replace(/\.jpg$/, ""))}.webp" alt="${esc(p.name + " in " + c.name)}" ${i === 0 ? 'fetchpriority="high"' : 'loading="lazy"'} onerror="this.onerror=null;this.src='${esc(c.img)}'"></div>
                 </article>`;
             }).join("");
             dots.innerHTML = items.map(({ p, c }, i) => `<button type="button" class="hero-dot${i === 0 ? " is-active" : ""}" data-index="${i}" aria-label="Show ${esc(p.name)} in ${esc(c.name)}"></button>`).join("");
