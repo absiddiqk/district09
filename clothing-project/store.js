@@ -40,14 +40,6 @@
         const SWATCH_HEX = { black: "#171717", white: "#ffffff", skyblue: "#8dafc0", brown: "#694a38", grey: "#4a4a4a", darkgrey: "#38393c", navy: "#172b4d" };
 
         const shadesFor = prefix => SHADES.map(s => ({ name: s.name, hex: SWATCH_HEX[s.key], img: `${prefix}_${s.key}.jpg` }));
-        const signatureColors = [
-            { name: "Brown", hex: SWATCH_HEX.brown, img: "special_henley1.jpg" },
-            { name: "Navy Blue", hex: SWATCH_HEX.navy, img: "special_henley2.jpg" }
-        ];
-        const signatureShortColors = [
-            { name: "Brown", hex: SWATCH_HEX.brown, img: "special_short1.jpg" },
-            { name: "Navy Blue", hex: SWATCH_HEX.navy, img: "special_short2.jpg", status: "soon" }
-        ];
         const plainTrouserColors = [
             { name: "Black", hex: SWATCH_HEX.black, img: "plain_blackpants.jpg", fit: "contain" },
             { name: "Grey", hex: SWATCH_HEX.grey, img: "plain_greypants.jpg", fit: "contain" },
@@ -69,10 +61,6 @@
               tag: "CLASSIC / SHORT SLEEVE", price: 25000, sizes: ["M", "L"], colors: shadesFor("short_sleeve") },
             { id: "striped-henley", category: "henley", group: "classic", status: "soon", name: "D09 Striped Henley",
               tag: "COMING SOON", image: "stripped_henley.jpg", note: "A new striped Henley is on the way.", waitlist: "GET DROP UPDATES" },
-            { id: "d09-signature-henley", category: "henley", group: "signature", status: "soon", name: "D09 Signature Henley — Long Sleeve",
-              tag: "COMING SOON", image: "special_henley1.jpg", note: "The Signature Long Sleeve Henley is on the way.", waitlist: "GET DROP UPDATES" },
-            { id: "d09-signature-henley-short-sleeve", category: "henley", group: "signature", status: "soon", name: "D09 Signature Henley — Short Sleeve",
-              tag: "COMING SOON", image: "special_short2.jpg", note: "The Signature Short Sleeve Henley is on the way.", waitlist: "GET DROP UPDATES" },
             { id: "plain-trouser", category: "trousers", group: "trousers", status: "available", name: "D09 Plain Trouser",
               tag: "PLAIN TROUSER", price: 30000, sizes: trouserSizes, colors: plainTrouserColors,
               note: "Available in waist sizes 30, 32, 34 and 36." },
@@ -294,7 +282,6 @@
         function renderProducts() {
             const groups = [
                 { id: "classic", category: "henley", title: "CLASSIC HENLEYS", note: "Choose long sleeve or short sleeve. Each style has the same easy-to-shop color and size options." },
-                { id: "signature", category: "henley", title: "SIGNATURE HENLEYS", note: "The signature fit is available in long sleeve and short sleeve, in Brown or Navy Blue." },
                 { id: "trousers", category: "trousers", title: "CORPORATE TROUSERS", note: "Plain and pinstripe styles from ₦30,000. Plain colors: Black, Grey, Navy Blue, and White. Pinstripe colors: Navy Blue, Grey, and White. Waist sizes 30, 32, 34 and 36." },
                 { id: "collar-tees", category: "collar-tees", title: "COLLAR TEES", note: "A new Collar Tee collection is on the way. Sign up for updates when it arrives." },
                 { id: "corporate-shirts", category: "corporate-shirts", title: "CORPORATE SHIRTS", note: "A new Corporate Shirt collection is on the way. Sign up for updates when it arrives." }
@@ -878,7 +865,6 @@
                         <li><button type="button" data-open="sizeGuideModal" aria-haspopup="dialog">SIZE GUIDE</button></li>
                         <li><button type="button" data-open="contactModal" aria-haspopup="dialog">CONTACT US</button></li>
                         <li><a href="shipping.html">SHIPPING &amp; RETURNS</a></li>
-                        <li><a href="account.html" data-account-link>ACCOUNT</a></li>
                     </ul>
                 </aside>`;
 
@@ -894,7 +880,6 @@
                         <a href="index.html#about">ABOUT</a>
                         <a href="shipping.html">SHIPPING &amp; RETURNS</a>
                         <a href="track.html">TRACK ORDER</a>
-                        <a href="account.html" data-account-link>ACCOUNT</a>
                         <a href="mailto:bydistrict09@gmail.com">EMAIL</a>
                         <a href="#">TOP &uarr;</a>
                     </div>
