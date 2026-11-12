@@ -116,7 +116,7 @@
                         person_profiles: "identified_only",
                         persistence: "localStorage",
                         respect_dnt: true,
-                        session_recording: { maskAllInputs: true, maskTextSelector: "#checkoutForm, #cartModal, #contactModal, #trackForm" },
+                        session_recording: { maskAllInputs: true, maskTextSelector: "#checkoutForm, #cartModal, #contactModal, #trackForm, #accountApp" },
                         loaded: ph => { ph.register({ site_host: location.hostname }); while (analyticsQueue.length) { const [e, p] = analyticsQueue.shift(); ph.capture(e, p); } }
                     });
                 } catch { /* ignore */ }
@@ -598,7 +598,39 @@
             }
         }
 
+        /* ---------- ACCOUNT (optional sign-in) ---------- */
+        let currentCustomer = null;
+        function identifyCustomer(c) {
+            try {
+                if (c && window.posthog && window.posthog.__loaded && typeof window.posthog.identify === "function") {
+                    window.posthog.identify("customer_" + c.id, { email: c.email, name: c.name || undefined });
+                }
+            } catch { /* analytics must never break the shop */ }
+        }
+        function applyCustomer(c) {
+            currentCustomer = c || null;
+            $$("[data-account-link]").forEach(a => { a.textContent = c ? "MY ACCOUNT" : "SIGN IN"; });
+            if (c) { if (analyticsOn) { const t = setInterval(() => { if (window.posthog && window.posthog.__loaded) { clearInterval(t); identifyCustomer(c); } }, 500); setTimeout(() => clearInterval(t), 10000); } }
+        }
+        function prefillCheckout() {
+            const c = currentCustomer;
+            if (!c) return;
+            const set = (sel, v) => { const el = $(sel); if (el && v && !el.value) el.value = v; };
+            set("#customerName", c.name); set("#customerEmail", c.email); set("#customerPhone", c.phone);
+            set("#customerState", c.state); set("#customerCity", c.city); set("#customerAddress", c.address);
+        }
+        async function loadCustomer() {
+            try {
+                const r = await fetch("/api/account/me", { credentials: "same-origin" });
+                if (!r.ok) return;
+                const data = await r.json();
+                applyCustomer(data.customer);
+            } catch { /* signed-out is fine */ }
+        }
+        window.D09 = { DELIVERY_STATES, track, applyCustomer, getCustomer: () => currentCustomer };
+
         function showCheckoutForm() {
+            prefillCheckout();
             $("#checkoutFormView").hidden = false;
             $("#checkoutSuccessView").hidden = true;
             const msg = $("#checkoutMessage");
@@ -782,6 +814,8 @@
             btn.disabled = true;
             btn.textContent = "SUBMITTING...";
             try {
+                fetch("/api/account/subscribe", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: input.value.trim(), _honey: "" }) }).catch(() => {});
+                track("newsletter_signup");
                 await sendEmailForm({
                     _subject: "New District 09 Newsletter Signup",
                     signup_email: input.value.trim(),
@@ -844,6 +878,7 @@
                         <li><button type="button" data-open="sizeGuideModal" aria-haspopup="dialog">SIZE GUIDE</button></li>
                         <li><button type="button" data-open="contactModal" aria-haspopup="dialog">CONTACT US</button></li>
                         <li><a href="shipping.html">SHIPPING &amp; RETURNS</a></li>
+                        <li><a href="account.html" data-account-link>ACCOUNT</a></li>
                     </ul>
                 </aside>`;
 
@@ -859,6 +894,7 @@
                         <a href="index.html#about">ABOUT</a>
                         <a href="shipping.html">SHIPPING &amp; RETURNS</a>
                         <a href="track.html">TRACK ORDER</a>
+                        <a href="account.html" data-account-link>ACCOUNT</a>
                         <a href="mailto:bydistrict09@gmail.com">EMAIL</a>
                         <a href="#">TOP &uarr;</a>
                     </div>
@@ -1395,6 +1431,7 @@
             initAnalytics();
             injectChrome();
             injectModals();
+            loadCustomer();
             renderShippingSections();
             if ($("#productSections")) renderProducts();
             if ($("#shopSections")) renderShop();

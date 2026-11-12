@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex">
+    <meta name="theme-color" content="#f5f3ed">
+    <meta name="description" content="Sign in to your DISTRICT 09 account to save your details and get updates.">
+    <meta property="og:site_name" content="DISTRICT 09">
+    <meta property="og:title" content="Account | DISTRICT 09">
+    <meta property="og:description" content="Sign in to your DISTRICT 09 account to save your details and get updates.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://district09.vercel.app/account.html">
+    <meta property="og:image" content="https://district09.vercel.app/og-image.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <title>Account | DISTRICT 09</title>
+    <link rel="icon" href="/district09-mark.svg" type="image/svg+xml">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body data-page="account">
+    <a href="#accountApp" class="skip-link">Skip to account</a>
+    <div id="siteHeader"></div>
+
+    <main id="main" class="track account">
+        <h1 id="accountTitle">YOUR ACCOUNT</h1>
+        <div id="accountApp" aria-live="polite"><p class="track-intro">Loading&hellip;</p></div>
+    </main>
+
+    <div id="siteFooter"></div>
+
+    <script src="store.js"></script>
+    <script>
+    (() => {
+        "use strict";
+        const app = document.getElementById("accountApp");
+        const title = document.getElementById("accountTitle");
+        const esc = v => String(v == null ? "" : v).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+        const D = () => window.D09 || { DELIVERY_STATES: [], track() {}, applyCustomer() {} };
+        let email = "";
+
+        async function api(path, method, data) {
+            const r = await fetch("/api/account/" + path, {
+                method, credentials: "same-origin",
+                headers: data ? { "Content-Type": "application/json" } : undefined,
+                body: data ? JSON.stringify(data) : undefined
+            });
+            let json = {};
+            try { json = await r.json(); } catch { /* ignore */ }
+            if (!r.ok) throw new Error(json.error || "Something went wrong. Please try again.");
+            return json;
+        }
+        const busy = (btn, on, text) => { btn.disabled = on; if (text) btn.textContent = on ? text : btn.dataset.label; };
+        const setMsg = (text, ok) => { const m = app.querySelector(".account-msg"); if (m) { m.textContent = text || ""; m.className = "checkout-message account-msg" + (text && !ok ? " error" : ""); } };
+
+        function viewEmail() {
+            title.textContent = "SIGN IN OR CREATE AN ACCOUNT";
+            app.innerHTML = `
+                <p class="track-intro">Enter your email and we&rsquo;ll send you a 6-digit code. No password needed. New here? This creates your account.</p>
+                <form id="emailForm" class="account-form" novalidate>
+                    <div class="checkout-field full">
+                        <label for="acEmail">EMAIL ADDRESS</label>
+                        <input id="acEmail" type="email" autocomplete="email" inputmode="email" required value="${esc(email)}">
+                    </div>
+                    <input class="honeypot" type="text" name="_honey" tabindex="-1" autocomplete="off" aria-hidden="true">
+                    <p class="checkout-message account-msg"></p>
+                    <button class="button" type="submit" data-label="SEND ME A CODE">SEND ME A CODE</button>
+                </form>
+                <p class="track-help">Accounts are optional. You can always check out as a guest.</p>`;
+            const form = app.querySelector("form");
+            form.addEventListener("submit", async e => {
+                e.preventDefault();
+                if (form.elements._honey.value) return;
+                const input = form.querySelector("#acEmail"), btn = form.querySelector("button");
+                if (!input.checkValidity()) { setMsg("Please enter a valid email address."); input.focus(); return; }
+                email = input.value.trim().toLowerCase();
+                busy(btn, true, "SENDING...");
+                try { await api("request-code", "POST", { email }); viewCode(); }
+                catch (err) { setMsg(err.message); busy(btn, false, true); }
+            });
+            form.querySelector("#acEmail").focus();
+        }
+
+        function viewCode() {
+            title.textContent = "CHECK YOUR EMAIL";
+            app.innerHTML = `
+                <p class="track-intro">We sent a 6-digit code to <strong>${esc(email)}</strong>. It expires in 10 minutes. Check your spam folder if you don&rsquo;t see it.</p>
+                <form id="codeForm" class="account-form" novalidate>
+                    <div class="checkout-field full">
+                        <label for="acCode">6-DIGIT CODE</label>
+                        <input id="acCode" class="code-input" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" required>
+                    </div>
+                    <p class="checkout-message account-msg"></p>
+                    <button class="button" type="submit" data-label="CONTINUE">CONTINUE</button>
+                    <button class="button button-secondary" type="button" id="acBack">USE A DIFFERENT EMAIL</button>
+                </form>`;
+            const form = app.querySelector("form"), input = form.querySelector("#acCode");
+            input.focus();
+            form.querySelector("#acBack").addEventListener("click", viewEmail);
+            form.addEventListener("submit", async e => {
+                e.preventDefault();
+                const btn = form.querySelector("button[type=submit]");
+                if (!/^\d{6}$/.test(input.value.trim())) { setMsg("Enter the 6-digit code from your email."); input.focus(); return; }
+                busy(btn, true, "CHECKING...");
+                try {
+                    const { customer, isNew } = await api("verify-code", "POST", { email, code: input.value.trim() });
+                    D().applyCustomer(customer);
+                    D().track(isNew ? "account_created" : "account_signed_in");
+                    viewProfile(customer, isNew);
+                } catch (err) { setMsg(err.message); busy(btn, false, true); }
+            });
+        }
+
+        function viewProfile(c, isNew, saved) {
+            title.textContent = isNew ? "WELCOME TO DISTRICT 09" : "YOUR ACCOUNT";
+            const states = D().DELIVERY_STATES.map(s => `<option value="${esc(s)}"${s === c.state ? " selected" : ""}>${esc(s)}</option>`).join("");
+            app.innerHTML = `
+                <p class="track-intro">${isNew ? "Almost done. Tell us a bit about you so checkout is quicker next time." : "Signed in as <strong>" + esc(c.email) + "</strong>. These details fill in automatically at checkout."}</p>
+                <form id="profileForm" class="account-form" novalidate>
+                    <div class="checkout-fields">
+                        <div class="checkout-field"><label for="pfName">FULL NAME *</label><input id="pfName" autocomplete="name" required value="${esc(c.name)}"></div>
+                        <div class="checkout-field"><label for="pfPhone">PHONE NUMBER</label><input id="pfPhone" type="tel" autocomplete="tel" inputmode="tel" value="${esc(c.phone)}"></div>
+                        <div class="checkout-field"><label for="pfState">DELIVERY STATE</label><select id="pfState" autocomplete="address-level1"><option value="">Select your state</option>${states}</select></div>
+                        <div class="checkout-field"><label for="pfCity">CITY / TOWN</label><input id="pfCity" autocomplete="address-level2" value="${esc(c.city)}"></div>
+                        <div class="checkout-field full"><label for="pfAddress">DELIVERY ADDRESS</label><textarea id="pfAddress" autocomplete="street-address">${esc(c.address)}</textarea></div>
+                    </div>
+                    <label class="consent"><input type="checkbox" id="pfConsent"${c.marketing_consent || isNew ? " checked" : ""}> <span>Email me about new drops and offers. You can untick this any time.</span></label>
+                    <p class="checkout-message account-msg ${saved ? "" : ""}" ${saved ? 'style="color:var(--olive)"' : ""}>${saved ? "Saved." : ""}</p>
+                    <button class="button" type="submit" data-label="SAVE DETAILS">SAVE DETAILS</button>
+                </form>
+                <div class="account-actions">
+                    <a class="button button-secondary" href="shop.html">CONTINUE SHOPPING</a>
+                    <button class="button button-secondary" type="button" id="acLogout">SIGN OUT</button>
+                </div>
+                <p class="track-help">We only use your details for your orders and, if you tick the box, our updates. <button type="button" class="link-btn" id="acDelete">Delete my account and data</button></p>`;
+            const form = app.querySelector("#profileForm");
+            form.addEventListener("submit", async e => {
+                e.preventDefault();
+                const btn = form.querySelector("button[type=submit]");
+                const name = form.querySelector("#pfName");
+                if (!name.value.trim()) { setMsg("Please enter your name."); name.focus(); return; }
+                busy(btn, true, "SAVING...");
+                try {
+                    const { customer } = await api("me", "POST", {
+                        name: name.value, phone: form.querySelector("#pfPhone").value, state: form.querySelector("#pfState").value,
+                        city: form.querySelector("#pfCity").value, address: form.querySelector("#pfAddress").value,
+                        marketing_consent: form.querySelector("#pfConsent").checked
+                    });
+                    D().applyCustomer(customer);
+                    D().track("profile_saved", { marketing_consent: customer.marketing_consent });
+                    viewProfile(customer, false, true);
+                } catch (err) { setMsg(err.message); busy(btn, false, true); }
+            });
+            app.querySelector("#acLogout").addEventListener("click", async () => {
+                try { await api("logout", "POST"); } catch { /* cookie may already be gone */ }
+                D().applyCustomer(null); email = ""; viewEmail();
+            });
+            app.querySelector("#acDelete").addEventListener("click", async () => {
+                if (!confirm("Delete your account and all saved details? This cannot be undone.")) return;
+                try { await api("me", "DELETE"); D().applyCustomer(null); email = ""; viewEmail(); setMsg("Your account was deleted.", true); }
+                catch (err) { setMsg(err.message); }
+            });
+        }
+
+        async function start() {
+            try {
+                const r = await fetch("/api/account/me", { credentials: "same-origin" });
+                const data = await r.json();
+                if (data.customer) { D().applyCustomer(data.customer); return viewProfile(data.customer, !data.customer.name); }
+                if (data.available === false) {
+                    title.textContent = "ACCOUNTS COMING SOON";
+                    app.innerHTML = '<p class="track-intro">Sign in is being set up. For now you can check out as a guest.</p><a class="button" href="shop.html">SHOP THE COLLECTION</a>';
+                    return;
+                }
+            } catch { /* fall through to sign-in */ }
+            viewEmail();
+        }
+        start();
+    })();
+    </script>
+</body>
+</html>
