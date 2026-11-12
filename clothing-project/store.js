@@ -90,6 +90,44 @@
         const $ = (sel, root = document) => root.querySelector(sel);
         const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 
+        /* ---------- ANALYTICS (PostHog) ----------
+           Anonymous usage stats only: no names, phones or addresses are ever sent, typed text is masked
+           in recordings, and it stays off on localhost and for visitors who send Do Not Track. */
+        const POSTHOG_KEY = "phc_BKcEiyDfma5sPxz5Czi2oQvCu2FeCe8A6Xe5JE9RoXii";
+        const POSTHOG_HOST = "https://us.i.posthog.com";   // EU project? use https://eu.i.posthog.com
+        const analyticsOn = !/^(localhost|127\.0\.0\.1)$/.test(location.hostname) && navigator.doNotTrack !== "1";
+        const analyticsQueue = [];
+        function track(event, props) {
+            if (!analyticsOn) return;
+            try {
+                if (window.posthog && typeof window.posthog.capture === "function" && window.posthog.__loaded) window.posthog.capture(event, props || {});
+                else analyticsQueue.push([event, props || {}]);
+            } catch { /* analytics must never break the shop */ }
+        }
+        function initAnalytics() {
+            if (!analyticsOn) return;
+            const start = () => {
+                try {
+                    if (!window.posthog || typeof window.posthog.init !== "function") return;
+                    window.posthog.init(POSTHOG_KEY, {
+                        api_host: POSTHOG_HOST,
+                        autocapture: false,
+                        capture_pageview: true,
+                        person_profiles: "identified_only",
+                        persistence: "localStorage",
+                        respect_dnt: true,
+                        session_recording: { maskAllInputs: true, maskTextSelector: "#checkoutForm, #cartModal, #contactModal, #trackForm" },
+                        loaded: ph => { ph.register({ site_host: location.hostname }); while (analyticsQueue.length) { const [e, p] = analyticsQueue.shift(); ph.capture(e, p); } }
+                    });
+                } catch { /* ignore */ }
+            };
+            const tag = document.createElement("script");
+            tag.async = true; tag.crossOrigin = "anonymous";
+            tag.src = POSTHOG_HOST.replace(".i.posthog.com", "-assets.i.posthog.com") + "/static/array.js";
+            tag.onload = start;
+            document.head.appendChild(tag);
+        }
+
         const money = n => new Intl.NumberFormat("en-NG", { style: "currency", currency: "NGN", maximumFractionDigits: 0 }).format(n);
         const esc = v => String(v).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 
@@ -97,6 +135,7 @@
             return "https://wa.me/" + WHATSAPP_NUMBER + "?text=" + encodeURIComponent(message);
         }
         function openWhatsApp(message) {
+            track("whatsapp_click");
             window.open(openWhatsAppUrl(message), "_blank", "noopener,noreferrer");
         }
 
@@ -319,12 +358,13 @@
             const p = card && byId[card.dataset.id];
             if (!p) return;
 
-            if (action === "color") setColor(card, p, Number(btn.dataset.index));
-            else if (action === "size") setSize(card, p, btn.dataset.size);
+            if (action === "color") { setColor(card, p, Number(btn.dataset.index)); track("colour_selected", { product_id: p.id, colour: p.colors[selection[p.id].color].name }); }
+            else if (action === "size") { setSize(card, p, btn.dataset.size); track("size_selected", { product_id: p.id, size: btn.dataset.size }); }
             else if (action === "add") {
                 const s = selection[p.id];
                 if (p.colors[s.color]?.status === "soon") return;
                 addItem(p.id, p.colors[s.color].name, s.size);
+                track("added_to_bag", { product_id: p.id, product_name: p.name, colour: p.colors[s.color].name, size: s.size, price: p.price });
                 const original = "ADD TO BAG";
                 btn.textContent = "ADDED ✓";
                 btn.classList.add("added");
@@ -605,6 +645,7 @@
                 if (!res.ok && result.status !== "mismatch") throw new Error(result.error || "Payment verification is unavailable.");
 
                 if (result.status === "success") {
+                    track("payment_confirmed", { reference });
                     bag = [];
                     renderCart();
                     $("#checkoutForm").reset();
@@ -615,6 +656,7 @@
                         "Hello District 09, my payment is confirmed. Please confirm availability and delivery for reference " + reference + ".",
                         { eyebrow: "ORDER PAID", track: true });
                 } else if (result.status === "failed" || paymentState === "cancelled") {
+                    track("payment_not_completed", { reference, state: paymentState || result.status });
                     showPaymentResult("PAYMENT NOT COMPLETED", "Paystack did not confirm a successful payment. Your bag is still saved. If your bank shows a debit, contact us before trying again.", reference,
                         "Hello District 09, my payment was not completed or needs checking. Reference: " + reference + ".",
                         { eyebrow: "NO SUCCESSFUL PAYMENT CONFIRMED" });
@@ -667,6 +709,7 @@
             }
             const fee = DELIVERY_FEES[customer.state];
 
+            track("checkout_started", { items: bagCount(), total, delivery_fee: fee, delivery_state: customer.state });
             btn.disabled = true;
             btn.textContent = "OPENING PAYSTACK...";
             msg.classList.remove("error");
@@ -708,6 +751,7 @@
                     // Do not block checkout; a verified payment still triggers a server-side order email.
                 }
                 try { localStorage.setItem(LAST_ORDER_KEY, payment.reference); } catch { /* private mode */ }
+                track("redirected_to_paystack", { total: total + fee, reference: payment.reference });
                 window.location.assign(payment.authorization_url);
             } catch (error) {
                 msg.classList.add("error");
@@ -1176,6 +1220,7 @@
             img.alt = `${p.name} in ${c.name}`;
             $$("[data-card-color]", card).forEach(d => d.setAttribute("aria-pressed", String(d === dot)));
             $(".card-link", card).href = `product.html?id=${encodeURIComponent(p.id)}&color=${idx}`;
+            track("colour_selected", { product_id: p.id, colour: c.name, from: "grid" });
         });
 
         /* ---------- LABELLED SECTIONS: Henleys / Trousers / Tees / Corporate ---------- */
@@ -1216,6 +1261,7 @@
             document.title = `${p.name} | DISTRICT 09`;
             box.innerHTML = `<a class="back-link" href="shop.html">&larr; SHOP ALL</a>` + renderShopProduct(p).replace("<h2 ", "<h1 ").replace("</h2>", "</h1>");
             setColor(box.querySelector(".product-card"), p, selection[p.id].color);
+            track("product_viewed", { product_id: p.id, product_name: p.name, price: p.price, category: p.category });
         }
 
         /* ---------- HOME: AVAILABLE NOW ROW ---------- */
@@ -1346,6 +1392,7 @@
 
         /* ---------- WIRING ---------- */
         function init() {
+            initAnalytics();
             injectChrome();
             injectModals();
             renderShippingSections();
@@ -1392,7 +1439,8 @@
             document.addEventListener("click", e => {
                 const opener = e.target.closest("[data-open]");
                 if (opener) {
-                    if (opener.dataset.open === "cartModal") renderCart();
+                    if (opener.dataset.open === "cartModal") { renderCart(); track("bag_opened", { items: bagCount(), total: bagTotal() }); }
+                    if (opener.dataset.open === "sizeGuideModal") track("size_guide_opened");
                     openModal(opener.dataset.open);
                     return;
                 }
