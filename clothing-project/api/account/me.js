@@ -2,10 +2,12 @@
 const { query, ensureSchema, dbConfigured, truthy } = require("../_lib/db");
 const { secret, getSession, clearSession } = require("../_lib/session");
 const { reply, body, clip } = require("../_lib/http");
+const { mailConfigured } = require("../_lib/mailer");
 const { publicCustomer } = require("../_lib/customer");
 
 module.exports = async (req, res) => {
-  if (!dbConfigured() || !secret()) {
+  if (!dbConfigured() || !secret() || !mailConfigured()) {
+    if (req.method === "GET" && dbConfigured() && secret()) { const s0 = getSession(req); if (s0) { try { await ensureSchema(); const r0 = await query(`SELECT * FROM customers WHERE id = $1`, [s0.id]); if (r0[0]) return reply(res, 200, { customer: publicCustomer(r0[0]), available: true }); } catch { /* fall through */ } } }
     return req.method === "GET" ? reply(res, 200, { customer: null, available: false }) : reply(res, 503, { error: "Accounts aren't available yet." });
   }
   const session = getSession(req);
