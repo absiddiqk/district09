@@ -1219,6 +1219,7 @@
                         <span class="featured-price">${money(p.price)}</span>
                     </div>
                 </a>${swatches}
+                <a class="card-select" href="product.html?id=${encodeURIComponent(p.id)}" data-select-link>SELECT OPTIONS</a>
             </div>`;
         }
 
@@ -1241,6 +1242,7 @@
             img.alt = `${p.name} in ${c.name}`;
             $$("[data-card-color]", card).forEach(d => d.setAttribute("aria-pressed", String(d === dot)));
             $(".card-link", card).href = `product.html?id=${encodeURIComponent(p.id)}&color=${idx}`;
+            const sel = $("[data-select-link]", card); if (sel) sel.href = $(".card-link", card).href;
             track("colour_selected", { product_id: p.id, colour: c.name, from: "grid" });
         });
 
