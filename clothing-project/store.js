@@ -1133,14 +1133,7 @@
 
         /* ---------- SHOP ALL PAGE (one section per product) ---------- */
         function sizeInfoHtml(p) {
-            if (p.category === "henley") {
-                return `
-                <table class="size-table shop-size-table henley-table">
-                    <caption class="visually-hidden">Size measurements for ${esc(p.name)}</caption>
-                    <thead><tr><th scope="col">Size</th><th scope="col">Chest</th><th scope="col">Length</th><th scope="col">Sleeve</th><th scope="col">Shoulder</th></tr></thead>
-                    <tbody>${henleySizeRowsHtml("size")}</tbody>
-                </table>`;
-            }
+            if (p.category === "henley") return ""; // measurements live in the Size Guide menu
             return `<p class="product-note">Available in ${p.category === "trousers" ? "waist " : ""}sizes ${esc(p.sizes.join(", "))}. Open the size guide for full measurements.</p>`;
         }
 
