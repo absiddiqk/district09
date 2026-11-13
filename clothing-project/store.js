@@ -56,9 +56,9 @@
 
         const PRODUCTS = [
             { id: "classic-henley", category: "henley", group: "classic", status: "available", name: "D09 Classic Henley — Long Sleeve",
-              tag: "CLASSIC / LONG SLEEVE", price: 25000, sizes: ["M", "L"], colors: shadesFor("plain") },
+              tag: "CLASSIC / LONG SLEEVE", price: 25000, sizes: ["S", "M", "L", "XL", "2XL"], colors: shadesFor("plain") },
             { id: "short-sleeve-henley", category: "henley", group: "classic", status: "available", name: "D09 Classic Henley — Short Sleeve",
-              tag: "CLASSIC / SHORT SLEEVE", price: 25000, sizes: ["M", "L"], colors: shadesFor("short_sleeve") },
+              tag: "CLASSIC / SHORT SLEEVE", price: 25000, sizes: ["S", "M", "L", "XL", "2XL"], colors: shadesFor("short_sleeve") },
             { id: "striped-henley", category: "henley", group: "classic", status: "soon", name: "D09 Striped Henley",
               tag: "COMING SOON", image: "stripped_henley.jpg", note: "A new striped Henley is on the way.", waitlist: "GET DROP UPDATES" },
             { id: "plain-trouser", category: "trousers", group: "trousers", status: "available", name: "D09 Plain Trouser",
@@ -914,10 +914,18 @@
             if (footerSlot) footerSlot.replaceWith(footer);
         }
 
+        // Flat garment measurements: [inches, cm] for chest, length, sleeve, shoulder.
         const HENLEY_SIZES = [
-            { size: "M", chest: '38"–40"', shoulder: '17.5"', length: '28"' },
-            { size: "L", chest: '41"–44"', shoulder: '18.5"', length: '29.5"' }
+            { size: "S", label: "Small (S)", chest: [19.3, 49], length: [25.2, 64], sleeve: [27.0, 69], shoulder: [16.3, 42] },
+            { size: "M", label: "Medium (M)", chest: [21.1, 54], length: [25.6, 65], sleeve: [28.0, 71], shoulder: [17.5, 45] },
+            { size: "L", label: "Large (L)", chest: [22.8, 58], length: [26.0, 66], sleeve: [28.9, 74], shoulder: [18.7, 48] },
+            { size: "XL", label: "Extra Large (XL)", chest: [24.6, 63], length: [26.4, 67], sleeve: [29.9, 76], shoulder: [19.9, 51] },
+            { size: "2XL", label: "2XL", chest: [26.4, 67], length: [26.8, 68], sleeve: [30.9, 79], shoulder: [21.1, 54] }
         ];
+        const henleySizeRowsHtml = (labelKey) => HENLEY_SIZES.map(r => {
+            const cell = m => `<td>${m[0].toFixed(1)}" <span class="cm">(${m[1]} cm)</span></td>`;
+            return `<tr><th scope="row">${labelKey === "label" ? r.label : r.size}</th>${cell(r.chest)}${cell(r.length)}${cell(r.sleeve)}${cell(r.shoulder)}</tr>`;
+        }).join("");
 
         function injectModals() {
             if (document.getElementById("cartModal")) return;
@@ -952,18 +960,13 @@
             <h2 id="modalTitle">DISTRICT 09 SIZE GUIDE</h2>
 
             <div class="modal-note">
-                <strong>Henley Sizing Notice:</strong> All District 09 Henleys are stocked in Medium (M) and Large (L).
+                <strong>Henley sizes:</strong> Available in S, M, L, XL and 2XL. Measurements are flat garment sizes.
             </div>
 
-            <h3 class="modal-subhead">1. Henley Tops (flat measurements)</h3>
+            <h3 class="modal-subhead">1. Henley Tops</h3>
             <table class="size-table henley-table">
                 <thead><tr><th scope="col">Size</th><th scope="col">Chest</th><th scope="col">Length</th><th scope="col">Sleeve</th><th scope="col">Shoulder</th></tr></thead>
-                <tbody>
-                    <tr><th scope="row">Small (S)</th><td>19.3" <span class="cm">(49 cm)</span></td><td>25.2" <span class="cm">(64 cm)</span></td><td>27.0" <span class="cm">(69 cm)</span></td><td>16.3" <span class="cm">(42 cm)</span></td></tr>
-                    <tr><th scope="row">Medium (M)</th><td>21.1" <span class="cm">(54 cm)</span></td><td>25.6" <span class="cm">(65 cm)</span></td><td>28.0" <span class="cm">(71 cm)</span></td><td>17.5" <span class="cm">(45 cm)</span></td></tr>
-                    <tr><th scope="row">Large (L)</th><td>22.8" <span class="cm">(58 cm)</span></td><td>26.0" <span class="cm">(66 cm)</span></td><td>28.9" <span class="cm">(74 cm)</span></td><td>18.7" <span class="cm">(48 cm)</span></td></tr>
-                    <tr><th scope="row">Extra Large (XL)</th><td>24.6" <span class="cm">(63 cm)</span></td><td>26.4" <span class="cm">(67 cm)</span></td><td>29.9" <span class="cm">(76 cm)</span></td><td>19.9" <span class="cm">(51 cm)</span></td></tr>
-                    <tr><th scope="row">2XL</th><td>26.4" <span class="cm">(67 cm)</span></td><td>26.8" <span class="cm">(68 cm)</span></td><td>30.9" <span class="cm">(79 cm)</span></td><td>21.1" <span class="cm">(54 cm)</span></td></tr>
+                <tbody>${henleySizeRowsHtml("label")}
                 </tbody>
             </table>
 
@@ -1132,10 +1135,10 @@
         function sizeInfoHtml(p) {
             if (p.category === "henley") {
                 return `
-                <table class="size-table shop-size-table">
+                <table class="size-table shop-size-table henley-table">
                     <caption class="visually-hidden">Size measurements for ${esc(p.name)}</caption>
-                    <thead><tr><th scope="col">Size</th><th scope="col">Chest</th><th scope="col">Shoulder</th><th scope="col">Length</th></tr></thead>
-                    <tbody>${HENLEY_SIZES.map(r => `<tr><th scope="row">${r.size}</th><td>${r.chest}</td><td>${r.shoulder}</td><td>${r.length}</td></tr>`).join("")}</tbody>
+                    <thead><tr><th scope="col">Size</th><th scope="col">Chest</th><th scope="col">Length</th><th scope="col">Sleeve</th><th scope="col">Shoulder</th></tr></thead>
+                    <tbody>${henleySizeRowsHtml("size")}</tbody>
                 </table>`;
             }
             return `<p class="product-note">Available in ${p.category === "trousers" ? "waist " : ""}sizes ${esc(p.sizes.join(", "))}. Open the size guide for full measurements.</p>`;
