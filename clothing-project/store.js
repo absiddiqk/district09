@@ -955,12 +955,15 @@
                 <strong>Henley Sizing Notice:</strong> All District 09 Henleys are stocked in Medium (M) and Large (L).
             </div>
 
-            <h3 class="modal-subhead">1. Henley Tops (M & L Only)</h3>
-            <table class="size-table">
-                <thead><tr><th scope="col">Size</th><th scope="col">Chest</th><th scope="col">Shoulder</th><th scope="col">Length</th></tr></thead>
+            <h3 class="modal-subhead">1. Henley Tops (flat measurements)</h3>
+            <table class="size-table henley-table">
+                <thead><tr><th scope="col">Size</th><th scope="col">Chest</th><th scope="col">Length</th><th scope="col">Sleeve</th><th scope="col">Shoulder</th></tr></thead>
                 <tbody>
-                    <tr><th scope="row">Medium (M)</th><td>38"–40"</td><td>17.5"</td><td>28"</td></tr>
-                    <tr><th scope="row">Large (L)</th><td>41"–44"</td><td>18.5"</td><td>29.5"</td></tr>
+                    <tr><th scope="row">Small (S)</th><td>19.3" <span class="cm">(49 cm)</span></td><td>25.2" <span class="cm">(64 cm)</span></td><td>27.0" <span class="cm">(69 cm)</span></td><td>16.3" <span class="cm">(42 cm)</span></td></tr>
+                    <tr><th scope="row">Medium (M)</th><td>21.1" <span class="cm">(54 cm)</span></td><td>25.6" <span class="cm">(65 cm)</span></td><td>28.0" <span class="cm">(71 cm)</span></td><td>17.5" <span class="cm">(45 cm)</span></td></tr>
+                    <tr><th scope="row">Large (L)</th><td>22.8" <span class="cm">(58 cm)</span></td><td>26.0" <span class="cm">(66 cm)</span></td><td>28.9" <span class="cm">(74 cm)</span></td><td>18.7" <span class="cm">(48 cm)</span></td></tr>
+                    <tr><th scope="row">Extra Large (XL)</th><td>24.6" <span class="cm">(63 cm)</span></td><td>26.4" <span class="cm">(67 cm)</span></td><td>29.9" <span class="cm">(76 cm)</span></td><td>19.9" <span class="cm">(51 cm)</span></td></tr>
+                    <tr><th scope="row">2XL</th><td>26.4" <span class="cm">(67 cm)</span></td><td>26.8" <span class="cm">(68 cm)</span></td><td>30.9" <span class="cm">(79 cm)</span></td><td>21.1" <span class="cm">(54 cm)</span></td></tr>
                 </tbody>
             </table>
 
