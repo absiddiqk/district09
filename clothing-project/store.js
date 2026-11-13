@@ -1133,7 +1133,6 @@
 
         /* ---------- SHOP ALL PAGE (one section per product) ---------- */
         function sizeInfoHtml(p) {
-            if (p.category === "henley") return ""; // measurements live in the Size Guide menu
             return `<p class="product-note">Available in ${p.category === "trousers" ? "waist " : ""}sizes ${esc(p.sizes.join(", "))}. Open the size guide for full measurements.</p>`;
         }
 
