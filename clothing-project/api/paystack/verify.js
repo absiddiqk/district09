@@ -1,3 +1,5 @@
+const { recordPaidOrder } = require("../_lib/orders");
+
 function reply(res, status, payload) {
   return res.status(status).json(payload);
 }
@@ -94,6 +96,8 @@ module.exports = async (req, res) => {
         error: "The payment amount does not match the order. Please contact District 09.",
       });
     }
+
+    await recordPaidOrder({ reference, email: metadata.customer_email || (transaction.customer && transaction.customer.email), phone: metadata.customer_phone, amountKobo: transaction.amount });
 
     // The attached storefront sends an order-intent email before redirecting to Paystack.
     // This verifier does not claim that a separate paid-order email was sent.

@@ -10,6 +10,8 @@
 // Paystack dashboard: Settings > API Keys & Webhooks > Live/Test Webhook URL =
 //   https://<your-site>/api/paystack/webhook
 
+const { recordPaidOrder } = require("../_lib/orders");
+
 const DEFAULT_TO = "bydistrict09@gmail.com";
 const DEFAULT_FROM = "District 09 Orders <onboarding@resend.dev>";
 
@@ -91,6 +93,8 @@ module.exports = async (req, res) => {
       console.error("Webhook: payment did not match an order; no alert sent.");
       return res.status(200).json({ ok: true, ignored: true });
     }
+
+    await recordPaidOrder({ reference, email: meta.customer_email || (tx.customer && tx.customer.email), phone: meta.customer_phone, amountKobo: tx.amount });
 
     if (!resendKey) {
       console.error("Webhook: RESEND_API_KEY is not set; order alert not sent.");

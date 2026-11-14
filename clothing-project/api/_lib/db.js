@@ -57,6 +57,15 @@ function ensureSchema() {
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       )`);
       await query(`CREATE INDEX IF NOT EXISTS login_codes_email_idx ON login_codes (email, created_at)`);
+      await query(`CREATE TABLE IF NOT EXISTS orders (
+        reference TEXT PRIMARY KEY,
+        email TEXT NOT NULL,
+        phone_key TEXT,
+        total_kobo BIGINT,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )`);
+      await query(`CREATE INDEX IF NOT EXISTS orders_email_idx ON orders (email)`);
+      await query(`CREATE INDEX IF NOT EXISTS orders_phone_idx ON orders (phone_key)`);
     })().catch(error => { schemaReady = null; throw error; });
   }
   return schemaReady;

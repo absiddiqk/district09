@@ -841,3 +841,10 @@
 .henley-table td, .henley-table th { padding-left: 5px; padding-right: 5px; font-size: 12px; }
 .henley-table .cm { display: block; white-space: nowrap; font-size: 11px; color: var(--muted, #666); }
 @media (min-width: 560px) { .henley-table .cm { display: inline; margin-left: 2px; } }
+
+/* First-order pricing */
+.price-was { text-decoration: line-through; color: #8a8a85; font-weight: 400; margin-right: 8px; }
+.price-now { color: inherit; }
+.featured-meta .price-was { font-size: min(12px, 4.6cqw); margin-right: 6px; }
+.first-order-note { font-size: 12px; line-height: 1.5; color: #4b5230; margin: 6px 0 10px; }
+.shop-product-info .first-order-note { font-size: 13px; }

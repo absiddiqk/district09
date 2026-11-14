@@ -56,9 +56,9 @@
 
         const PRODUCTS = [
             { id: "classic-henley", category: "henley", group: "classic", status: "available", name: "D09 Classic Henley — Long Sleeve",
-              tag: "CLASSIC / LONG SLEEVE", price: 25000, sizes: ["S", "M", "L", "XL", "2XL"], colors: shadesFor("plain") },
+              tag: "CLASSIC / LONG SLEEVE", price: 25000, regularPrice: 30000, sizes: ["S", "M", "L", "XL", "2XL"], colors: shadesFor("plain") },
             { id: "short-sleeve-henley", category: "henley", group: "classic", status: "available", name: "D09 Classic Henley — Short Sleeve",
-              tag: "CLASSIC / SHORT SLEEVE", price: 25000, sizes: ["S", "M", "L", "XL", "2XL"], colors: shadesFor("short_sleeve") },
+              tag: "CLASSIC / SHORT SLEEVE", price: 25000, regularPrice: 30000, sizes: ["S", "M", "L", "XL", "2XL"], colors: shadesFor("short_sleeve") },
             { id: "striped-henley", category: "henley", group: "classic", status: "soon", name: "D09 Striped Henley",
               tag: "COMING SOON", image: "stripped_henley.jpg", note: "A new striped Henley is on the way.", waitlist: "GET DROP UPDATES" },
             { id: "plain-trouser", category: "trousers", group: "trousers", status: "available", name: "D09 Plain Trouser",
@@ -151,6 +151,12 @@
         }
 
         const lineTotal = i => byId[i.id].price * i.quantity;
+        // First-order pricing: shows the regular price struck through beside the first-order price.
+        const priceHtml = p => p.regularPrice
+            ? `<span class="price-was" aria-label="Regular price ${money(p.regularPrice)}">${money(p.regularPrice)}</span><span class="price-now">${money(p.price)}</span>`
+            : money(p.price);
+        const firstOrderNote = p => p.regularPrice
+            ? `<p class="first-order-note"><strong>First order price.</strong> Henleys are ${money(p.regularPrice)} on later orders.</p>` : "";
         const bagTotal = () => bag.reduce((s, i) => s + lineTotal(i), 0);
         const bagCount = () => bag.reduce((s, i) => s + i.quantity, 0);
 
@@ -231,7 +237,7 @@
                 <span class="tag">${esc(p.tag)}</span>
                 <div class="product-meta-header">
                     <h3 class="product-title">${esc(p.name)}</h3>
-                    <span class="price">${money(p.price)}</span>
+                    <span class="price">${priceHtml(p)}</span>
                 </div>
 
                 <div class="selection-panel">
@@ -454,6 +460,7 @@
             const fee = deliveryFee();
             const products = bagTotal();
             $("#checkoutProductTotal").textContent = money(products);
+            const fo = $("#checkoutFirstOrderNote"); if (fo) fo.hidden = !bag.some(i => byId[i.id] && byId[i.id].regularPrice);
             $("#checkoutDeliveryLabel").textContent = fee === null ? "Delivery fee" : `Delivery to ${selectedState()}`;
             $("#checkoutDeliveryFee").textContent = fee === null ? "Choose your state" : money(fee);
             $("#checkoutTotalLabel").textContent = fee === null ? "Total (before delivery)" : "Total to pay";
@@ -616,7 +623,10 @@
         }
         window.D09 = { DELIVERY_STATES, track, applyCustomer, getCustomer: () => currentCustomer };
 
+        let acceptRegularPrice = false;
         function showCheckoutForm() {
+            acceptRegularPrice = false;
+            const submitBtn = $("#checkoutSubmit"); if (submitBtn) { delete submitBtn.dataset.label; submitBtn.textContent = "CONTINUE TO PAYSTACK"; }
             prefillCheckout();
             $("#checkoutFormView").hidden = false;
             $("#checkoutSuccessView").hidden = true;
@@ -738,10 +748,18 @@
                 const initResponse = await fetch("/api/paystack/initialize", {
                     method: "POST",
                     headers: { "Content-Type": "application/json", "Accept": "application/json" },
-                    body: JSON.stringify({ customer, items: checkoutItems })
+                    body: JSON.stringify({ customer, items: checkoutItems, accept_regular_price: acceptRegularPrice })
                 });
                 let payment = {};
                 try { payment = await initResponse.json(); } catch { /* handled below */ }
+                if (initResponse.status === 409 && payment.code === "regular_price") {
+                    // Returning customer: never switch the price silently. Show it and ask again.
+                    acceptRegularPrice = true;
+                    msg.classList.add("error");
+                    msg.textContent = `You've ordered with us before, so Henleys are at the regular price of ₦30,000. Your new total is ${money(payment.total_ngn)} including delivery. Press the button again to continue.`;
+                    btn.dataset.label = `PAY ${money(payment.total_ngn)} WITH PAYSTACK`;
+                    return;
+                }
                 if (!initResponse.ok || !payment.authorization_url || !payment.reference) {
                     throw new Error(payment.error || "Paystack could not start checkout. Please order via WhatsApp.");
                 }
@@ -777,7 +795,7 @@
                 msg.textContent = error.message || "We couldn't start checkout. Please try again or order via WhatsApp.";
             } finally {
                 btn.disabled = false;
-                btn.textContent = "CONTINUE TO PAYSTACK";
+                btn.textContent = btn.dataset.label || "CONTINUE TO PAYSTACK";
             }
         }
 
@@ -1029,6 +1047,7 @@
                         <span id="checkoutDeliveryLabel">Delivery fee</span>
                         <span id="checkoutDeliveryFee">Choose your state</span>
                     </div>
+                    <p class="first-order-note" id="checkoutFirstOrderNote" hidden>First order price applied to your Henleys. On later orders Henleys are ₦30,000.</p>
                     <div class="checkout-summary-total">
                         <span id="checkoutTotalLabel">Total (before delivery)</span>
                         <span id="checkoutTotal">₦0</span>
@@ -1164,7 +1183,8 @@
                 <div class="shop-product-info">
                     <span class="tag">${esc(p.tag)}</span>
                     <h2 class="shop-product-title">${esc(p.name)}</h2>
-                    <p class="shop-product-price">${money(p.price)}</p>
+                    <p class="shop-product-price">${priceHtml(p)}</p>
+                    ${firstOrderNote(p)}
                     ${p.note ? `<p class="product-note">${esc(p.note)}</p>` : ""}
 
                     <div class="selection-panel">
@@ -1210,11 +1230,11 @@
                 </div>` : "";
             return `
             <div class="featured-card" data-card-id="${esc(p.id)}">
-                <a class="card-link" href="product.html?id=${encodeURIComponent(p.id)}" aria-label="${esc(p.name)}, ${money(p.price)}">
+                <a class="card-link" href="product.html?id=${encodeURIComponent(p.id)}" aria-label="${esc(p.name)}, ${money(p.price)}${p.regularPrice ? " first order price, regular price " + money(p.regularPrice) : ""}">
                     <div class="image-container card-cutout"><img src="${esc(cutoutSrc(first.img))}" alt="${esc(`${p.name} in ${first.name}`)}" class="product-image" style="object-fit:contain" loading="lazy" width="600" height="800" data-fallback="${esc(first.img)}" data-fit="${first.fit || "cover"}" onerror="this.onerror=null;this.src=this.dataset.fallback;this.style.objectFit=this.dataset.fit;this.parentNode.classList.remove('card-cutout')"></div>
                     <div class="featured-meta">
                         <span class="featured-name">${esc(p.name)}</span>
-                        <span class="featured-price">${money(p.price)}</span>
+                        <span class="featured-price">${priceHtml(p)}</span>
                     </div>
                 </a>${swatches}
                 <a class="card-select" href="product.html?id=${encodeURIComponent(p.id)}" data-select-link>SELECT OPTIONS</a>

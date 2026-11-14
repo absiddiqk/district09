@@ -1,15 +1,18 @@
 const crypto = require("node:crypto");
+const { hasPaidBefore } = require("../_lib/orders");
 
 const CATALOG = {
   "classic-henley": {
     name: "D09 Classic Henley",
-    price: 25000,
+    price: 25000, // first-order price
+    regular_price: 30000, // later orders
     sizes: ["S", "M", "L", "XL", "2XL"],
     colors: ["Black", "White", "Sky Blue", "Brown", "Dark Grey"],
   },
   "short-sleeve-henley": {
     name: "D09 Short Sleeve Henley",
-    price: 25000,
+    price: 25000, // first-order price
+    regular_price: 30000, // later orders
     sizes: ["S", "M", "L", "XL", "2XL"],
     colors: ["Black", "White", "Sky Blue", "Brown", "Dark Grey"],
   },
@@ -172,6 +175,8 @@ module.exports = async (req, res) => {
 
     let totalNgn = 0;
     const verifiedItems = [];
+    // First-order pricing: Henleys are ₦25,000 on a customer's first paid order, ₦30,000 after.
+    const returning = await hasPaidBefore(email, phone);
 
     for (const item of items) {
       const product = CATALOG[item && item.id];
@@ -190,7 +195,8 @@ module.exports = async (req, res) => {
         });
       }
 
-      const lineTotal = product.price * quantity;
+      const unitPrice = returning && product.regular_price ? product.regular_price : product.price;
+      const lineTotal = unitPrice * quantity;
       totalNgn += lineTotal;
 
       verifiedItems.push({
@@ -198,7 +204,7 @@ module.exports = async (req, res) => {
         color: item.color,
         size: item.size,
         quantity,
-        unit_price_ngn: product.price,
+        unit_price_ngn: unitPrice,
         line_total_ngn: lineTotal,
       });
     }
@@ -206,6 +212,17 @@ module.exports = async (req, res) => {
     const productTotalNgn = totalNgn;
     const deliveryFeeNgn = DELIVERY_FEES[state];
     totalNgn = productTotalNgn + deliveryFeeNgn;
+
+    // Never switch the price silently: a returning customer must see the regular price and confirm it.
+    if (returning && verifiedItems.some((v, i) => CATALOG[items[i].id].regular_price) && body.accept_regular_price !== true) {
+      return reply(res, 409, {
+        code: "regular_price",
+        error: "You've ordered with us before, so Henleys are at the regular price of ₦30,000.",
+        product_total_ngn: productTotalNgn,
+        delivery_fee_ngn: deliveryFeeNgn,
+        total_ngn: totalNgn,
+      });
+    }
 
     const expectedAmountKobo = totalNgn * 100;
     if (!Number.isSafeInteger(expectedAmountKobo) || expectedAmountKobo <= 0) {
@@ -246,6 +263,7 @@ module.exports = async (req, res) => {
             order_total_kobo: expectedAmountKobo,
             order_total_ngn: totalNgn,
             product_total_ngn: productTotalNgn,
+            pricing: returning ? "regular" : "first_order",
             delivery_fee_ngn: deliveryFeeNgn,
             delivery_state: state,
             order_items: orderLines.join("\n"),
