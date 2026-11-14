@@ -70,7 +70,7 @@
             { id: "d09-collar-tees", category: "collar-tees", group: "collar-tees", status: "soon", name: "D09 Collar Tees",
               tag: "COMING SOON", image: "collar_tee.jpg", note: "A new Collar Tee collection is on the way.", waitlist: "GET DROP UPDATES" },
             { id: "d09-corporate-shirts", category: "corporate-shirts", group: "corporate-shirts", status: "soon", name: "D09 Corporate Shirts",
-              tag: "COMING SOON", image: "cooprate_shirt.jpg", note: "The new Corporate Shirt collection is on the way.", waitlist: "GET DROP UPDATES" }
+              tag: "COMING SOON", image: "cooprate_shirt.jpg", unblurred: true, note: "The new Corporate Shirt collection is on the way.", waitlist: "GET DROP UPDATES" }
         ];
         // Henley offer: ₦25,000 from 14 November 2026 to 1 January 2027 (West Africa Time). Keep in step with api/paystack/initialize.js.
         const OFFER_START = Date.parse("2026-11-14T00:00:00+01:00");
@@ -1224,7 +1224,7 @@
             const image = (first && first.img) || p.image || (p.images && p.images[0]);
             if (p.status !== "available") {
                 return `
-                <div class="featured-card is-soon" aria-label="${esc(p.name)}, coming soon">
+                <div class="featured-card is-soon${p.unblurred ? " is-clear" : ""}" aria-label="${esc(p.name)}, coming soon">
                     <div class="image-container">${imgTag(image, p.name + " — coming soon")}<div class="coming-soon-badge">COMING SOON</div></div>
                     <div class="featured-meta"><span class="featured-name">${esc(p.name)}</span></div>
                 </div>`;
