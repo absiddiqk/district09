@@ -1,18 +1,22 @@
 const crypto = require("node:crypto");
-const { hasPaidBefore } = require("../_lib/orders");
+
+// Henley offer window (West Africa Time). Keep in step with OFFER_START / OFFER_END in store.js.
+const OFFER_START = Date.parse("2026-12-01T00:00:00+01:00");
+const OFFER_END = Date.parse("2027-01-02T00:00:00+01:00");
+const offerActive = () => Date.now() >= OFFER_START && Date.now() < OFFER_END;
 
 const CATALOG = {
   "classic-henley": {
     name: "D09 Classic Henley",
-    price: 25000, // first-order price
-    regular_price: 30000, // later orders
+    price: 30000,
+    offer_price: 25000, // during the offer window (OFFER_START to OFFER_END)
     sizes: ["S", "M", "L", "XL", "2XL"],
     colors: ["Black", "White", "Sky Blue", "Brown", "Dark Grey"],
   },
   "short-sleeve-henley": {
     name: "D09 Short Sleeve Henley",
-    price: 25000, // first-order price
-    regular_price: 30000, // later orders
+    price: 30000,
+    offer_price: 25000, // during the offer window (OFFER_START to OFFER_END)
     sizes: ["S", "M", "L", "XL", "2XL"],
     colors: ["Black", "White", "Sky Blue", "Brown", "Dark Grey"],
   },
@@ -175,8 +179,7 @@ module.exports = async (req, res) => {
 
     let totalNgn = 0;
     const verifiedItems = [];
-    // First-order pricing: Henleys are ₦25,000 on a customer's first paid order, ₦30,000 after.
-    const returning = await hasPaidBefore(email, phone);
+    const onOffer = offerActive();
 
     for (const item of items) {
       const product = CATALOG[item && item.id];
@@ -195,7 +198,7 @@ module.exports = async (req, res) => {
         });
       }
 
-      const unitPrice = returning && product.regular_price ? product.regular_price : product.price;
+      const unitPrice = onOffer && product.offer_price ? product.offer_price : product.price;
       const lineTotal = unitPrice * quantity;
       totalNgn += lineTotal;
 
@@ -213,11 +216,12 @@ module.exports = async (req, res) => {
     const deliveryFeeNgn = DELIVERY_FEES[state];
     totalNgn = productTotalNgn + deliveryFeeNgn;
 
-    // Never switch the price silently: a returning customer must see the regular price and confirm it.
-    if (returning && verifiedItems.some((v, i) => CATALOG[items[i].id].regular_price) && body.accept_regular_price !== true) {
+    // Never charge a different amount than the customer was shown (for example if the offer just started or ended).
+    const shownTotal = Number(body.expected_total_ngn);
+    if (Number.isFinite(shownTotal) && shownTotal !== totalNgn && body.accept_price_change !== true) {
       return reply(res, 409, {
-        code: "regular_price",
-        error: "You've ordered with us before, so Henleys are at the regular price of ₦30,000.",
+        code: "price_changed",
+        error: "Prices have been updated.",
         product_total_ngn: productTotalNgn,
         delivery_fee_ngn: deliveryFeeNgn,
         total_ngn: totalNgn,
@@ -263,7 +267,7 @@ module.exports = async (req, res) => {
             order_total_kobo: expectedAmountKobo,
             order_total_ngn: totalNgn,
             product_total_ngn: productTotalNgn,
-            pricing: returning ? "regular" : "first_order",
+            pricing: onOffer ? "offer" : "regular",
             delivery_fee_ngn: deliveryFeeNgn,
             delivery_state: state,
             order_items: orderLines.join("\n"),

@@ -56,9 +56,9 @@
 
         const PRODUCTS = [
             { id: "classic-henley", category: "henley", group: "classic", status: "available", name: "D09 Classic Henley — Long Sleeve",
-              tag: "CLASSIC / LONG SLEEVE", price: 25000, regularPrice: 30000, sizes: ["S", "M", "L", "XL", "2XL"], colors: shadesFor("plain") },
+              tag: "CLASSIC / LONG SLEEVE", price: 30000, offerPrice: 25000, sizes: ["S", "M", "L", "XL", "2XL"], colors: shadesFor("plain") },
             { id: "short-sleeve-henley", category: "henley", group: "classic", status: "available", name: "D09 Classic Henley — Short Sleeve",
-              tag: "CLASSIC / SHORT SLEEVE", price: 25000, regularPrice: 30000, sizes: ["S", "M", "L", "XL", "2XL"], colors: shadesFor("short_sleeve") },
+              tag: "CLASSIC / SHORT SLEEVE", price: 30000, offerPrice: 25000, sizes: ["S", "M", "L", "XL", "2XL"], colors: shadesFor("short_sleeve") },
             { id: "striped-henley", category: "henley", group: "classic", status: "soon", name: "D09 Striped Henley",
               tag: "COMING SOON", image: "stripped_henley.jpg", note: "A new striped Henley is on the way.", waitlist: "GET DROP UPDATES" },
             { id: "plain-trouser", category: "trousers", group: "trousers", status: "available", name: "D09 Plain Trouser",
@@ -72,6 +72,11 @@
             { id: "d09-corporate-shirts", category: "corporate-shirts", group: "corporate-shirts", status: "soon", name: "D09 Corporate Shirts",
               tag: "COMING SOON", image: "cooprate_shirt.jpg", note: "The new Corporate Shirt collection is on the way.", waitlist: "GET DROP UPDATES" }
         ];
+        // Henley offer: ₦25,000 from 1 December 2026 to 1 January 2027 (West Africa Time). Keep in step with api/paystack/initialize.js.
+        const OFFER_START = Date.parse("2026-12-01T00:00:00+01:00");
+        const OFFER_END = Date.parse("2027-01-02T00:00:00+01:00");
+        const offerActive = Date.now() >= OFFER_START && Date.now() < OFFER_END;
+        PRODUCTS.forEach(p => { if (p.offerPrice && offerActive) { p.regularPrice = p.price; p.price = p.offerPrice; } });
         const byId = Object.fromEntries(PRODUCTS.map(p => [p.id, p]));
 
         /* ---------- HELPERS ---------- */
@@ -156,7 +161,7 @@
             ? `<span class="price-was" aria-label="Regular price ${money(p.regularPrice)}">${money(p.regularPrice)}</span><span class="price-now">${money(p.price)}</span>`
             : money(p.price);
         const firstOrderNote = p => p.regularPrice
-            ? `<p class="first-order-note"><strong>First order price.</strong> Henleys are ${money(p.regularPrice)} on later orders.</p>` : "";
+            ? `<p class="first-order-note"><strong>Offer ends 1 January.</strong> Henleys return to ${money(p.regularPrice)} after.</p>` : "";
         const bagTotal = () => bag.reduce((s, i) => s + lineTotal(i), 0);
         const bagCount = () => bag.reduce((s, i) => s + i.quantity, 0);
 
@@ -623,9 +628,9 @@
         }
         window.D09 = { DELIVERY_STATES, track, applyCustomer, getCustomer: () => currentCustomer };
 
-        let acceptRegularPrice = false;
+        let acceptPriceChange = false;
         function showCheckoutForm() {
-            acceptRegularPrice = false;
+            acceptPriceChange = false;
             const submitBtn = $("#checkoutSubmit"); if (submitBtn) { delete submitBtn.dataset.label; submitBtn.textContent = "CONTINUE TO PAYSTACK"; }
             prefillCheckout();
             $("#checkoutFormView").hidden = false;
@@ -748,15 +753,15 @@
                 const initResponse = await fetch("/api/paystack/initialize", {
                     method: "POST",
                     headers: { "Content-Type": "application/json", "Accept": "application/json" },
-                    body: JSON.stringify({ customer, items: checkoutItems, accept_regular_price: acceptRegularPrice })
+                    body: JSON.stringify({ customer, items: checkoutItems, expected_total_ngn: total + fee, accept_price_change: acceptPriceChange })
                 });
                 let payment = {};
                 try { payment = await initResponse.json(); } catch { /* handled below */ }
-                if (initResponse.status === 409 && payment.code === "regular_price") {
-                    // Returning customer: never switch the price silently. Show it and ask again.
-                    acceptRegularPrice = true;
+                if (initResponse.status === 409 && payment.code === "price_changed") {
+                    // Never charge a different amount than the one shown: show the current total and ask again.
+                    acceptPriceChange = true;
                     msg.classList.add("error");
-                    msg.textContent = `You've ordered with us before, so Henleys are at the regular price of ₦30,000. Your new total is ${money(payment.total_ngn)} including delivery. Press the button again to continue.`;
+                    msg.textContent = `Prices have been updated. Your total is now ${money(payment.total_ngn)} including delivery. Press the button again to continue.`;
                     btn.dataset.label = `PAY ${money(payment.total_ngn)} WITH PAYSTACK`;
                     return;
                 }
@@ -1047,7 +1052,7 @@
                         <span id="checkoutDeliveryLabel">Delivery fee</span>
                         <span id="checkoutDeliveryFee">Choose your state</span>
                     </div>
-                    <p class="first-order-note" id="checkoutFirstOrderNote" hidden>First order price applied to your Henleys. On later orders Henleys are ₦30,000.</p>
+                    <p class="first-order-note" id="checkoutFirstOrderNote" hidden>Offer price applied to your Henleys. The offer ends 1 January.</p>
                     <div class="checkout-summary-total">
                         <span id="checkoutTotalLabel">Total (before delivery)</span>
                         <span id="checkoutTotal">₦0</span>
