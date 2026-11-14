@@ -72,8 +72,8 @@
             { id: "d09-corporate-shirts", category: "corporate-shirts", group: "corporate-shirts", status: "soon", name: "D09 Corporate Shirts",
               tag: "COMING SOON", image: "cooprate_shirt.jpg", note: "The new Corporate Shirt collection is on the way.", waitlist: "GET DROP UPDATES" }
         ];
-        // Henley offer: ₦25,000 from 1 December 2026 to 1 January 2027 (West Africa Time). Keep in step with api/paystack/initialize.js.
-        const OFFER_START = Date.parse("2026-12-01T00:00:00+01:00");
+        // Henley offer: ₦25,000 from 14 November 2026 to 1 January 2027 (West Africa Time). Keep in step with api/paystack/initialize.js.
+        const OFFER_START = Date.parse("2026-11-14T00:00:00+01:00");
         const OFFER_END = Date.parse("2027-01-02T00:00:00+01:00");
         const offerActive = Date.now() >= OFFER_START && Date.now() < OFFER_END;
         PRODUCTS.forEach(p => { if (p.offerPrice && offerActive) { p.regularPrice = p.price; p.price = p.offerPrice; } });

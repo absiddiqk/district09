@@ -1,7 +1,7 @@
 const crypto = require("node:crypto");
 
 // Henley offer window (West Africa Time). Keep in step with OFFER_START / OFFER_END in store.js.
-const OFFER_START = Date.parse("2026-12-01T00:00:00+01:00");
+const OFFER_START = Date.parse("2026-11-14T00:00:00+01:00");
 const OFFER_END = Date.parse("2027-01-02T00:00:00+01:00");
 const offerActive = () => Date.now() >= OFFER_START && Date.now() < OFFER_END;
 
