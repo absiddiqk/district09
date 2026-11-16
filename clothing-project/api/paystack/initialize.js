@@ -41,7 +41,7 @@ const CATALOG = {
   },
   "pinstripe-trouser": {
     name: "D09 Pinstripe Trouser",
-    price: 30000,
+    price: 40000,
     sizes: ["30", "32", "34", "36"],
     colors: ["Black", "Grey", "Navy Blue", "White"],
   },
