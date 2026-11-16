@@ -65,7 +65,7 @@
               tag: "PLAIN TROUSER", price: 30000, sizes: trouserSizes, colors: plainTrouserColors,
               note: "Available in waist sizes 30, 32, 34 and 36." },
             { id: "pinstripe-trouser", category: "trousers", group: "trousers", status: "available", name: "D09 Pinstripe Trouser",
-              tag: "PINSTRIPE TROUSER", price: 30000, sizes: trouserSizes, colors: stripedTrouserColors,
+              tag: "PINSTRIPE TROUSER", price: 40000, sizes: trouserSizes, colors: stripedTrouserColors,
               note: "Available in waist sizes 30, 32, 34 and 36." },
             { id: "d09-collar-tees", category: "collar-tees", group: "collar-tees", status: "soon", name: "D09 Collar Tees",
               tag: "COMING SOON", image: "collar_tee.jpg", note: "A new Collar Tee collection is on the way.", waitlist: "GET DROP UPDATES" },
@@ -293,7 +293,7 @@
         function renderProducts() {
             const groups = [
                 { id: "classic", category: "henley", title: "CLASSIC HENLEYS", note: "Choose long sleeve or short sleeve. Each style has the same easy-to-shop color and size options." },
-                { id: "trousers", category: "trousers", title: "CORPORATE TROUSERS", note: "Plain and pinstripe styles from ₦30,000. Plain colors: Black, Grey, Navy Blue, and White. Pinstripe colors: Navy Blue, Grey, and White. Waist sizes 30, 32, 34 and 36." },
+                { id: "trousers", category: "trousers", title: "CORPORATE TROUSERS", note: "Plain trousers ₦30,000, pinstripe trousers ₦40,000. Plain colors: Black, Grey, Navy Blue, and White. Pinstripe colors: Navy Blue, Grey, and White. Waist sizes 30, 32, 34 and 36." },
                 { id: "collar-tees", category: "collar-tees", title: "COLLAR TEES", note: "A new Collar Tee collection is on the way. Sign up for updates when it arrives." },
                 { id: "corporate-shirts", category: "corporate-shirts", title: "CORPORATE SHIRTS", note: "A new Corporate Shirt collection is on the way. Sign up for updates when it arrives." }
             ];
