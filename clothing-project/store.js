@@ -1207,9 +1207,9 @@
                 <h2 id="successTitle" tabindex="-1">CHECKING PAYMENT…</h2>
                 <div class="order-ref" id="successRef"></div>
                 <p id="successMessage" aria-live="polite">We are checking your payment directly with Paystack.</p>
+                <div id="saveDetails" class="save-details" hidden></div>
                 <a class="button button-block" id="successTrack" hidden>TRACK THIS ORDER</a>
                 <a class="button button-secondary button-block" id="successWhatsApp" target="_blank" rel="noopener noreferrer" hidden>ASK ABOUT THIS ORDER ON WHATSAPP</a>
-                <div id="saveDetails" class="save-details" hidden></div>
                 <button type="button" class="button button-secondary button-block" data-close>CONTINUE SHOPPING</button>
             </div>
         </div>
