@@ -848,3 +848,10 @@
 .featured-meta .price-was { font-size: min(12px, 4.6cqw); margin-right: 6px; }
 .first-order-note { font-size: 12px; line-height: 1.5; color: #4b5230; margin: 6px 0 10px; }
 .shop-product-info .first-order-note { font-size: 13px; }
+
+/* Save details after payment */
+.save-details { border-top: 1px solid var(--line, #d9d6cb); margin: 18px 0 14px; padding-top: 18px; text-align: left; display: flex; flex-direction: column; gap: 12px; }
+.save-details[hidden] { display: none; }
+.save-details h3 { margin: 0; font-size: 14px; letter-spacing: 1.2px; font-weight: 800; }
+.save-details p { margin: 0; font-size: 14px; line-height: 1.5; color: #444; }
+.save-details .code-input { width: 100%; }

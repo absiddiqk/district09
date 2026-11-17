@@ -618,13 +618,109 @@
             set("#customerName", c.name); set("#customerEmail", c.email); set("#customerPhone", c.phone);
             set("#customerState", c.state); set("#customerCity", c.city); set("#customerAddress", c.address);
         }
+        let accountsAvailable = false;
+        let customerReady = Promise.resolve();
         async function loadCustomer() {
             try {
                 const r = await fetch("/api/account/me", { credentials: "same-origin" });
                 if (!r.ok) return;
                 const data = await r.json();
+                accountsAvailable = data.available === true;
                 applyCustomer(data.customer);
             } catch { /* signed-out is fine */ }
+        }
+
+        /* ---------- SAVE DETAILS AFTER PAYMENT ---------- */
+        const SAVED_KEY = "d09_saved_details_v1";
+        function rememberOrderDetails(reference, c) {
+            try { sessionStorage.setItem(SAVED_KEY, JSON.stringify({ reference, name: c.name, email: c.email, phone: c.phone, state: c.state, city: c.city, address: c.address })); } catch { /* private mode */ }
+        }
+        function takeOrderDetails(reference) {
+            try {
+                const raw = sessionStorage.getItem(SAVED_KEY);
+                sessionStorage.removeItem(SAVED_KEY);
+                const d = raw ? JSON.parse(raw) : null;
+                return d && d.reference === reference && d.email ? d : null;
+            } catch { return null; }
+        }
+        async function acctApi(path, method, data) {
+            const r = await fetch("/api/account/" + path, {
+                method, credentials: "same-origin",
+                headers: data ? { "Content-Type": "application/json" } : undefined,
+                body: data ? JSON.stringify(data) : undefined
+            });
+            let json = {};
+            try { json = await r.json(); } catch { /* ignore */ }
+            if (!r.ok) throw new Error(json.error || "Something went wrong. Please try again.");
+            return json;
+        }
+        async function offerSaveDetails(reference) {
+            const box = $("#saveDetails");
+            if (!box) return;
+            box.hidden = true; box.innerHTML = "";
+            const details = takeOrderDetails(reference);
+            await customerReady;
+            if (!details || currentCustomer || !accountsAvailable) return;
+
+            const msgEl = () => box.querySelector(".save-msg");
+            const setMsg = (t, ok) => { const m = msgEl(); if (m) { m.textContent = t || ""; m.className = "checkout-message save-msg" + (t && !ok ? " error" : ""); } };
+            const busy = (btn, on, text) => { btn.disabled = on; btn.textContent = on ? text : btn.dataset.label; };
+            const close = () => { box.hidden = true; box.innerHTML = ""; };
+            let wantsUpdates = false;
+
+            function viewOffer() {
+                box.hidden = false;
+                box.innerHTML = `
+                    <h3>SAVE YOUR DETAILS FOR NEXT TIME</h3>
+                    <p>Skip typing your name and address on your next order. We&rsquo;ll email a 6-digit code to <strong>${esc(details.email)}</strong> to confirm it&rsquo;s you. No password needed.</p>
+                    <label class="consent"><input type="checkbox" id="saveConsent"> <span>Email me about new drops and offers. You can untick this any time.</span></label>
+                    <p class="checkout-message save-msg" aria-live="polite"></p>
+                    <button type="button" class="button button-block" id="saveSend" data-label="SEND ME A CODE">SEND ME A CODE</button>
+                    <button type="button" class="button button-secondary button-block" id="saveSkip">NO THANKS</button>`;
+                box.querySelector("#saveSkip").addEventListener("click", close);
+                box.querySelector("#saveSend").addEventListener("click", async e => {
+                    const btn = e.currentTarget;
+                    wantsUpdates = box.querySelector("#saveConsent").checked;
+                    busy(btn, true, "SENDING…");
+                    try {
+                        await acctApi("request-code", "POST", { email: details.email, _honey: "" });
+                        track("save_details_code_sent");
+                        viewCode();
+                    } catch (err) { setMsg(err.message); busy(btn, false); }
+                });
+            }
+            function viewCode() {
+                box.innerHTML = `
+                    <h3>ENTER YOUR CODE</h3>
+                    <p>We sent a 6-digit code to <strong>${esc(details.email)}</strong>. It can take a minute, and may land in spam.</p>
+                    <div class="checkout-field full"><input id="saveCode" class="code-input" inputmode="numeric" autocomplete="one-time-code" maxlength="6" aria-label="6-digit code"></div>
+                    <p class="checkout-message save-msg" aria-live="polite"></p>
+                    <button type="button" class="button button-block" id="saveConfirm" data-label="SAVE MY DETAILS">SAVE MY DETAILS</button>
+                    <button type="button" class="button button-secondary button-block" id="saveSkip">NO THANKS</button>`;
+                const input = box.querySelector("#saveCode");
+                input.focus();
+                box.querySelector("#saveSkip").addEventListener("click", close);
+                box.querySelector("#saveConfirm").addEventListener("click", async e => {
+                    const btn = e.currentTarget;
+                    const code = input.value.trim();
+                    if (!/^\d{6}$/.test(code)) { setMsg("Enter the 6-digit code from your email."); input.focus(); return; }
+                    busy(btn, true, "SAVING…");
+                    try {
+                        const { customer } = await acctApi("verify-code", "POST", { email: details.email, code });
+                        const phone = /^[+0-9\s\-()]{7,25}$/.test(details.phone || "") ? details.phone : "";
+                        const saved = await acctApi("me", "POST", {
+                            name: details.name, phone, state: details.state, city: details.city, address: details.address,
+                            marketing_consent: wantsUpdates || customer.marketing_consent === true
+                        });
+                        applyCustomer(saved.customer);
+                        track("details_saved_after_checkout", { marketing_consent: saved.customer.marketing_consent });
+                        box.innerHTML = `
+                            <h3>DETAILS SAVED</h3>
+                            <p>Next time your name, phone and delivery address fill in automatically at checkout.${saved.customer.marketing_consent ? " We&rsquo;ll email you about new drops and offers." : ""}</p>`;
+                    } catch (err) { setMsg(err.message); busy(btn, false); }
+                });
+            }
+            viewOffer();
         }
         window.D09 = { DELIVERY_STATES, track, applyCustomer, getCustomer: () => currentCustomer };
 
@@ -689,6 +785,7 @@
                     showPaymentResult("PAYMENT CONFIRMED", emailMessage, reference,
                         "Hello District 09, my payment is confirmed. Please confirm availability and delivery for reference " + reference + ".",
                         { eyebrow: "ORDER PAID", track: true });
+                    offerSaveDetails(reference);
                 } else if (result.status === "failed" || paymentState === "cancelled") {
                     track("payment_not_completed", { reference, state: paymentState || result.status });
                     showPaymentResult("PAYMENT NOT COMPLETED", "Paystack did not confirm a successful payment. Your bag is still saved. If your bank shows a debit, contact us before trying again.", reference,
@@ -793,6 +890,7 @@
                     // Do not block checkout; a verified payment still triggers a server-side order email.
                 }
                 try { localStorage.setItem(LAST_ORDER_KEY, payment.reference); } catch { /* private mode */ }
+                rememberOrderDetails(payment.reference, customer);
                 track("redirected_to_paystack", { total: total + fee, reference: payment.reference });
                 window.location.assign(payment.authorization_url);
             } catch (error) {
@@ -1109,6 +1207,7 @@
                 <h2 id="successTitle" tabindex="-1">CHECKING PAYMENT…</h2>
                 <div class="order-ref" id="successRef"></div>
                 <p id="successMessage" aria-live="polite">We are checking your payment directly with Paystack.</p>
+                <div id="saveDetails" class="save-details" hidden></div>
                 <a class="button button-block" id="successTrack" hidden>TRACK THIS ORDER</a>
                 <a class="button button-secondary button-block" id="successWhatsApp" target="_blank" rel="noopener noreferrer" hidden>ASK ABOUT THIS ORDER ON WHATSAPP</a>
                 <button type="button" class="button button-secondary button-block" data-close>CONTINUE SHOPPING</button>
@@ -1443,7 +1542,7 @@
             initAnalytics();
             injectChrome();
             injectModals();
-            loadCustomer();
+            customerReady = loadCustomer();
             renderShippingSections();
             if ($("#productSections")) renderProducts();
             if ($("#shopSections")) renderShop();
