@@ -888,6 +888,7 @@
                         <li><button type="button" data-open="sizeGuideModal" aria-haspopup="dialog">SIZE GUIDE</button></li>
                         <li><button type="button" data-open="contactModal" aria-haspopup="dialog">CONTACT US</button></li>
                         <li><a href="shipping.html">SHIPPING &amp; RETURNS</a></li>
+                        <li><a href="account.html" data-account-link>ACCOUNT</a></li>
                     </ul>
                 </aside>`;
 
@@ -903,6 +904,7 @@
                         <a href="index.html#about">ABOUT</a>
                         <a href="shipping.html">SHIPPING &amp; RETURNS</a>
                         <a href="track.html">TRACK ORDER</a>
+                        <a href="account.html" data-account-link>ACCOUNT</a>
                         <a href="mailto:bydistrict09@gmail.com">EMAIL</a>
                         <a href="#">TOP &uarr;</a>
                     </div>
