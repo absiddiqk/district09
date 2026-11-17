@@ -986,6 +986,7 @@
                         <li><button type="button" data-open="sizeGuideModal" aria-haspopup="dialog">SIZE GUIDE</button></li>
                         <li><button type="button" data-open="contactModal" aria-haspopup="dialog">CONTACT US</button></li>
                         <li><a href="shipping.html">SHIPPING &amp; RETURNS</a></li>
+                        <li><a href="track.html">TRACK YOUR ORDER</a></li>
                         <li><a href="account.html" data-account-link>ACCOUNT</a></li>
                     </ul>
                 </aside>`;
