@@ -14,14 +14,14 @@
         // Delivery fee per destination (naira). Shown to the customer before they pay.
         // The server holds its own copy and charges from that one, so keep both lists identical.
         const DELIVERY_FEES = {
-            "Abia": 4500, "Adamawa": 7000, "Akwa Ibom": 6000, "Anambra": 4000, "Bauchi": 5500,
-            "Bayelsa": 6000, "Benue": 5000, "Borno": 8000, "Cross River": 6000, "Delta": 4500,
-            "Ebonyi": 4500, "Edo": 3500, "Ekiti": 5000, "Enugu": 4000, "FCT Abuja": 3500,
-            "Gombe": 6000, "Imo": 4500, "Jigawa": 6500, "Kaduna": 4500, "Kano": 6000,
-            "Katsina": 6500, "Kebbi": 7000, "Kogi": 2000, "Kwara": 5000, "Lagos": 5500,
-            "Nasarawa": 4000, "Niger": 4500, "Ogun": 5500, "Ondo": 4500, "Osun": 5000,
-            "Oyo": 5000, "Plateau": 5500, "Rivers": 5500, "Sokoto": 7500, "Taraba": 7000,
-            "Yobe": 7000, "Zamfara": 7000
+            "Abia": 5500, "Adamawa": 8000, "Akwa Ibom": 7000, "Anambra": 5000, "Bauchi": 6500,
+            "Bayelsa": 7000, "Benue": 6000, "Borno": 9000, "Cross River": 7000, "Delta": 5500,
+            "Ebonyi": 5500, "Edo": 4500, "Ekiti": 6000, "Enugu": 5000, "FCT Abuja": 4500,
+            "Gombe": 7000, "Imo": 5500, "Jigawa": 7500, "Kaduna": 5500, "Kano": 7000,
+            "Katsina": 7500, "Kebbi": 8000, "Kogi": 2000, "Kwara": 6000, "Lagos": 6500,
+            "Nasarawa": 5000, "Niger": 5500, "Ogun": 6500, "Ondo": 5500, "Osun": 6000,
+            "Oyo": 6000, "Plateau": 6500, "Rivers": 6500, "Sokoto": 8500, "Taraba": 8000,
+            "Yobe": 8000, "Zamfara": 8000
         };
         const DELIVERY_STATES = Object.keys(DELIVERY_FEES);
 
@@ -70,7 +70,7 @@
             { id: "d09-collar-tees", category: "collar-tees", group: "collar-tees", status: "soon", name: "D09 Collar Tees",
               tag: "COMING SOON", image: "collar_tee.jpg", note: "A new Collar Tee collection is on the way.", waitlist: "GET DROP UPDATES" },
             { id: "d09-corporate-shirts", category: "corporate-shirts", group: "corporate-shirts", status: "soon", name: "D09 Corporate Shirts",
-              tag: "COMING SOON", image: "cooprate_shirt.jpg", unblurred: true, note: "The new Corporate Shirt collection is on the way.", waitlist: "GET DROP UPDATES" }
+              tag: "COMING SOON", image: "cooprate_shirt.jpg", note: "The new Corporate Shirt collection is on the way.", waitlist: "GET DROP UPDATES" }
         ];
         // Henley offer: ₦25,000 from 14 November 2026 to 1 January 2027 (West Africa Time). Keep in step with api/paystack/initialize.js.
         const OFFER_START = Date.parse("2026-11-14T00:00:00+01:00");
