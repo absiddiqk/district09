@@ -107,6 +107,7 @@
         .button:hover:not(:disabled) { background: var(--olive); border-color: var(--olive); }
         .button-secondary { background: transparent; color: var(--ink); }
         .button-secondary:hover:not(:disabled) { background: var(--ink); color: #fff; border-color: var(--ink); }
+        .button[hidden] { display: none; }
         .button-block { width: 100%; }
         .button-block + .button-block { margin-top: 10px; }
 
