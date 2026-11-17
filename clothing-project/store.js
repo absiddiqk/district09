@@ -798,7 +798,7 @@
                 } else {
                     showPaymentResult("PAYMENT PROCESSING", "Paystack has not confirmed the final result yet. Your bag is saved. Please check your Paystack receipt or contact us before retrying.", reference,
                         "Hello District 09, please check the status of my payment. Reference: " + reference + ".",
-                        { eyebrow: "AWAITING PAYSTACK CONFIRMATION" });
+                        { eyebrow: "AWAITING PAYSTACK CONFIRMATION", track: true });
                 }
             } catch (error) {
                 showPaymentResult("PAYMENT STATUS UNCONFIRMED", error.message + " If your bank shows a debit, do not retry until the store checks the reference.", reference,
