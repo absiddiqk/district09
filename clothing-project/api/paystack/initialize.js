@@ -111,6 +111,19 @@ function siteOrigin() {
   }
 }
 
+// Every address the live store is served from. A customer must come back to the same address they
+// paid from (their bag and saved details live in that address's browser storage), so the payment
+// return link uses whichever approved address the order came from.
+const STORE_ORIGINS = [
+  "https://district09.ng",
+  "https://www.district09.ng",
+  "https://district09.vercel.app",
+];
+
+function approvedOrigins(primary) {
+  return new Set([primary, ...STORE_ORIGINS]);
+}
+
 function validEmail(value) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
@@ -135,11 +148,14 @@ module.exports = async (req, res) => {
 
   // Safety guard against using a live key on a Vercel Preview deployment.
   // This origin check is an operational guard, not authentication.
-  if (mode === "live" && req.headers.origin !== origin) {
+  const approved = approvedOrigins(origin);
+  if (mode === "live" && !approved.has(req.headers.origin)) {
     return reply(res, 409, {
       error: "Live payments are only enabled on the approved production store.",
     });
   }
+  // Send the customer back to the address they ordered from.
+  const returnOrigin = approved.has(req.headers.origin) ? req.headers.origin : origin;
 
   try {
     let body = req.body || {};
@@ -234,10 +250,10 @@ module.exports = async (req, res) => {
     }
 
     const reference = `D09-${crypto.randomUUID()}`;
-    const callback = new URL("/", origin);
+    const callback = new URL("/", returnOrigin);
     callback.searchParams.set("payment", "return");
 
-    const cancelAction = new URL("/", origin);
+    const cancelAction = new URL("/", returnOrigin);
     cancelAction.searchParams.set("payment", "cancelled");
     cancelAction.searchParams.set("reference", reference);
 
