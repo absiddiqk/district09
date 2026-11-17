@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /account.html
+Disallow: /track.html
+
+Sitemap: https://district09.ng/sitemap.xml
