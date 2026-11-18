@@ -264,6 +264,7 @@
                 </div>
 
                 <button type="button" class="add-to-bag-btn" data-action="add">ADD TO BAG</button>
+                <button type="button" class="buy-now-btn" data-action="buy">BUY IT NOW</button>
             </article>`;
         }
 
@@ -323,6 +324,8 @@
                 addButton.disabled = comingSoon;
                 addButton.textContent = comingSoon ? "COMING SOON" : "ADD TO BAG";
             }
+            const buyButton = $(".buy-now-btn", card);
+            if (buyButton) buyButton.hidden = comingSoon;
             // Swap immediately; browser cache is warmed for available variants during idle time.
             if (card.closest("#productPage") && !comingSoon) {
                 // Single-product page: show the background-free cutout, falling back to the original photo.
@@ -358,6 +361,14 @@
 
             if (action === "color") { setColor(card, p, Number(btn.dataset.index)); track("colour_selected", { product_id: p.id, colour: p.colors[selection[p.id].color].name }); }
             else if (action === "size") { setSize(card, p, btn.dataset.size); track("size_selected", { product_id: p.id, size: btn.dataset.size }); }
+            else if (action === "buy") {
+                const s = selection[p.id];
+                if (p.colors[s.color]?.status === "soon") return;
+                addItem(p.id, p.colors[s.color].name, s.size);
+                track("buy_now", { product_id: p.id, product_name: p.name, colour: p.colors[s.color].name, size: s.size, price: p.price });
+                showCheckoutForm();
+                openModal("checkoutModal");
+            }
             else if (action === "add") {
                 const s = selection[p.id];
                 if (p.colors[s.color]?.status === "soon") return;
@@ -1312,6 +1323,7 @@
                     ${sizeInfoHtml(p)}
 
                     <button type="button" class="add-to-bag-btn" data-action="add">ADD TO BAG</button>
+                <button type="button" class="buy-now-btn" data-action="buy">BUY IT NOW</button>
                     <button type="button" class="text-link" data-open="sizeGuideModal">VIEW FULL SIZE GUIDE</button>
                 </div>
             </article>`;

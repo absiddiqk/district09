@@ -855,3 +855,9 @@
 .save-details h3 { margin: 0; font-size: 14px; letter-spacing: 1.2px; font-weight: 800; }
 .save-details p { margin: 0; font-size: 14px; line-height: 1.5; color: #444; }
 .save-details .code-input { width: 100%; }
+
+/* Buy it now: solid companion to the outlined ADD TO BAG button */
+.buy-now-btn { width: 100%; margin-top: 10px; padding: 11px 14px; background: var(--ink); color: #fff; border: 1px solid var(--ink); font-size: 10px; font-weight: 700; letter-spacing: 1.2px; text-align: center; transition: all .25s ease; }
+.buy-now-btn:hover { background: transparent; color: var(--ink); }
+.buy-now-btn[hidden] { display: none; }
+.shop-product .buy-now-btn { margin-top: 10px; padding: 14px; }
