@@ -873,3 +873,8 @@
 @media (max-width: 760px) {
     .hero-nav { background: rgba(245, 243, 237, .85); border-radius: 50%; width: 34px; height: 34px; font-size: 22px; }
 }
+
+/* Contact icons on the home page */
+.contact-line { display: flex; align-items: center; gap: 10px; }
+.contact-line .ci { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; color: var(--ink); }
+.contact-line .ci-fill { fill: currentColor; stroke: none; }
