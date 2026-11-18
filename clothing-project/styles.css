@@ -861,3 +861,15 @@
 .buy-now-btn:hover { background: transparent; color: var(--ink); }
 .buy-now-btn[hidden] { display: none; }
 .shop-product .buy-now-btn { margin-top: 10px; padding: 14px; }
+
+/* Home slideshow: model photos (4:5 portrait) */
+.hero-nav { color: var(--ink); }
+.hero-photo.is-model { height: auto; }
+.hero-photo.is-model img { height: min(62vh, 540px); width: auto; aspect-ratio: 4 / 5; object-fit: cover; filter: none; }
+@media (max-width: 760px) {
+    .hero-photo.is-model img { width: 100%; max-width: 420px; height: auto; }
+    .hero-nav { top: 30%; }
+}
+@media (max-width: 760px) {
+    .hero-nav { background: rgba(245, 243, 237, .85); border-radius: 50%; width: 34px; height: 34px; font-size: 22px; }
+}

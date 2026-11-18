@@ -1435,19 +1435,20 @@
         function initHeroSlider() {
             const slider = $("#heroSlider");
             if (!slider) return;
-            // Pick 7 random (product, colour) combinations from the products that are on sale.
-            const combos = [];
-            // The white henley photos do not show well on the slideshow background, so it is left out here (it still sells normally).
-            const SKIP = new Set();
-            PRODUCTS.filter(p => p.status === "available").forEach(p => p.colors.forEach((c, ci) => { if (!SKIP.has(p.id + "|" + c.name)) combos.push({ p, c, ci }); }));
-            for (let i = combos.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [combos[i], combos[j]] = [combos[j], combos[i]]; }
-            // The black long-sleeve henley always opens the slideshow; the rest stay random.
-            const FIRST = combos.findIndex(x => x.p.id === "classic-henley" && x.c.name === "Black");
-            if (FIRST > 0) combos.unshift(combos.splice(FIRST, 1)[0]);
-            const items = combos.slice(0, 7);
+            // Model photos for the home slideshow. Each links to the piece worn (colour index in the product's colours).
+            const MODEL_SLIDES = [
+                { photo: "photos/model-1.jpg", id: "classic-henley", ci: 0, alt: "Two models wearing the black long-sleeve henley" },
+                { photo: "photos/model-2.jpg", id: "classic-henley", ci: 3, alt: "Model in the brown long-sleeve henley beside a model in the white short-sleeve henley" },
+                { photo: "photos/model-3.jpg", id: "classic-henley", ci: 3, alt: "Model wearing the brown long-sleeve henley" },
+                { photo: "photos/model-4.jpg", id: "classic-henley", ci: 0, alt: "Two models in black henleys and trousers" },
+                { photo: "photos/model-5.jpg", id: "classic-henley", ci: 3, alt: "Models in the brown long-sleeve and white short-sleeve henleys" },
+                { photo: "photos/model-6.jpg", id: "classic-henley", ci: 0, alt: "Models in black henleys photographed from below" },
+                { photo: "photos/model-7.jpg", id: "classic-henley", ci: 0, alt: "Model in the black long-sleeve henley looking at a phone" }
+            ];
+            const items = MODEL_SLIDES.map(m => { const p = byId[m.id]; return p && p.colors[m.ci] ? { p, c: p.colors[m.ci], ci: m.ci, photo: m.photo, alt: m.alt } : null; }).filter(Boolean);
             if (!items.length) { slider.hidden = true; return; }
             const track = $("#heroTrack"), dots = $("#heroDots");
-            track.innerHTML = items.map(({ p, c, ci }, i) => {
+            track.innerHTML = items.map(({ p, c, ci, photo, alt }, i) => {
                 return `
                 <article class="hero-slide${i === 0 ? " is-active" : ""}" aria-hidden="${i === 0 ? "false" : "true"}" aria-label="${i + 1} of ${items.length}">
                     <div class="hero-copy">
@@ -1456,7 +1457,7 @@
                         <p class="hero-price">${esc(c.name)}</p>
                         <a class="button" href="product.html?id=${encodeURIComponent(p.id)}&color=${ci}" ${i === 0 ? "" : 'tabindex="-1"'}>SHOP NOW</a>
                     </div>
-                    <div class="hero-photo"><img src="${esc(cutoutSrc(c.img))}" alt="${esc(p.name + " in " + c.name)}" ${i === 0 ? 'fetchpriority="high"' : 'loading="lazy"'} onerror="this.onerror=null;this.src='${esc(c.img)}'"></div>
+                    <div class="hero-photo is-model"><img src="${esc(photo)}" alt="${esc(alt)}" width="900" height="1125" ${i === 0 ? 'fetchpriority="high"' : 'loading="lazy"'}></div>
                 </article>`;
             }).join("");
             dots.innerHTML = items.map(({ p, c }, i) => `<button type="button" class="hero-dot${i === 0 ? " is-active" : ""}" data-index="${i}" aria-label="Show ${esc(p.name)} in ${esc(c.name)}"></button>`).join("");
