@@ -161,7 +161,7 @@
             ? `<span class="price-was" aria-label="Regular price ${money(p.regularPrice)}">${money(p.regularPrice)}</span><span class="price-now">${money(p.price)}</span>`
             : money(p.price);
         const firstOrderNote = p => p.regularPrice
-            ? `<p class="first-order-note"><strong>Offer ends 1 January.</strong> Henleys return to ${money(p.regularPrice)} after.</p>` : "";
+            ? `<p class="first-order-note"><strong>Offer ends January 1st.</strong> Henleys return to ${money(p.regularPrice)} after.</p>` : "";
         const bagTotal = () => bag.reduce((s, i) => s + lineTotal(i), 0);
         const bagCount = () => bag.reduce((s, i) => s + i.quantity, 0);
 
@@ -1164,7 +1164,7 @@
                         <span id="checkoutDeliveryLabel">Delivery fee</span>
                         <span id="checkoutDeliveryFee">Choose your state</span>
                     </div>
-                    <p class="first-order-note" id="checkoutFirstOrderNote" hidden>Offer price applied to your Henleys. The offer ends 1 January.</p>
+                    <p class="first-order-note" id="checkoutFirstOrderNote" hidden>Offer price applied to your Henleys. The offer ends January 1st.</p>
                     <div class="checkout-summary-total">
                         <span id="checkoutTotalLabel">Total (before delivery)</span>
                         <span id="checkoutTotal">₦0</span>
