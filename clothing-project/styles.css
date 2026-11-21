@@ -905,3 +905,6 @@
 /* Footer contact icons */
 .footer-contact .contact-line .ci { color: #fff; }
 .footer-contact .contact-line + .contact-line { margin-top: 6px; }
+
+/* Home: a single contact card */
+.about-details { grid-template-columns: 1fr; max-width: 440px; }

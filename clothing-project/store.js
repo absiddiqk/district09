@@ -1088,7 +1088,7 @@
                     </div>
                     <div>
                         <h4>AVAILABILITY</h4>
-                        <p>Open 24 hours,<br>every day</p>
+                        <p>Open 24 hours,<br>Everyday</p>
                     </div>
                     <div>
                         <h4>FOLLOW US</h4>
