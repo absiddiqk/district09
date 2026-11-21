@@ -883,3 +883,21 @@
 .is-preview-blurred .product-image,
 .image-container.color-preview-coming-soon .product-image,
 .featured-card.is-soon:not(.is-clear) .product-image { filter: none; transform: none; opacity: 1; }
+
+/* Product page: swipeable gallery (product picture, then the model wearing it) */
+.pg { position: relative; max-width: 520px; margin-bottom: 14px; }
+.pg-track { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; }
+.pg-track::-webkit-scrollbar { display: none; }
+.pg-track > * { flex: 0 0 100%; scroll-snap-align: start; scroll-snap-stop: always; }
+.pg .image-container { max-width: none; margin-bottom: 0; }
+.pg-photo { aspect-ratio: 3 / 4; overflow: hidden; border: 1px solid var(--line); background: #ebe8df; }
+.pg-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.pg-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 34px; height: 34px; border-radius: 50%; border: 0; background: rgba(245, 243, 237, .88); color: var(--ink); font-size: 22px; line-height: 1; cursor: pointer; z-index: 3; }
+.pg-nav[hidden], .pg-dots[hidden] { display: none; }
+.pg-prev { left: 8px; } .pg-next { right: 8px; }
+.pg-dots { position: absolute; left: 0; right: 0; bottom: 12px; display: flex; justify-content: center; gap: 6px; z-index: 3; }
+.pg-dot { width: 22px; height: 4px; padding: 0; border: 0; background: rgba(23, 23, 23, .28); cursor: pointer; }
+.pg-dot[aria-current="true"] { background: var(--ink); }
+.pg-photo + .pg-photo { }
+.pg-dots { left: 50%; right: auto; transform: translateX(-50%); padding: 7px 10px; background: rgba(245, 243, 237, .9); border-radius: 999px; }
+.pg-dot { width: 16px; }

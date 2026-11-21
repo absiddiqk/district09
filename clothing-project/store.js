@@ -305,6 +305,61 @@
                 </section>`).join("");
         }
 
+        /* Model photos shown as extra swipeable slides on a product page, per product and colour. */
+        const MODEL_PHOTOS = {
+            "classic-henley|Black": [
+                ["photos/model-1.jpg", "Two models wearing the black long-sleeve henley"],
+                ["photos/model-4.jpg", "Two models in black henleys and trousers"],
+                ["photos/model-6.jpg", "Models in black henleys photographed from below"],
+                ["photos/model-7.jpg", "Model in the black long-sleeve henley looking at a phone"]
+            ],
+            "classic-henley|Brown": [
+                ["photos/model-3.jpg", "Model wearing the brown long-sleeve henley"],
+                ["photos/model-2.jpg", "Model in the brown long-sleeve henley beside a model in the white short-sleeve henley"],
+                ["photos/model-5.jpg", "Models in the brown long-sleeve and white short-sleeve henleys"]
+            ],
+            "short-sleeve-henley|White": [
+                ["photos/model-2.jpg", "Model in the white short-sleeve henley beside a model in the brown long-sleeve henley"],
+                ["photos/model-5.jpg", "Models in the white short-sleeve and brown long-sleeve henleys"]
+            ]
+        };
+
+        function renderGallery(card, p, color) {
+            const frame = $(".image-container", card);
+            let pg = frame.parentNode.classList.contains("pg-track") ? frame.parentNode.parentNode : null;
+            if (!pg) {
+                pg = document.createElement("div");
+                pg.className = "pg";
+                pg.innerHTML = '<div class="pg-track"></div><button type="button" class="pg-nav pg-prev" aria-label="Previous photo" hidden>&lsaquo;</button><button type="button" class="pg-nav pg-next" aria-label="Next photo" hidden>&rsaquo;</button><div class="pg-dots" hidden></div>';
+                frame.parentNode.insertBefore(pg, frame);
+                $(".pg-track", pg).appendChild(frame);
+                const track = $(".pg-track", pg);
+                const go = dir => track.scrollBy({ left: dir * track.clientWidth, behavior: "smooth" });
+                $(".pg-prev", pg).addEventListener("click", () => go(-1));
+                $(".pg-next", pg).addEventListener("click", () => go(1));
+                track.addEventListener("scroll", () => {
+                    const i = Math.round(track.scrollLeft / Math.max(track.clientWidth, 1));
+                    $$(".pg-dot", pg).forEach((d, n) => d.setAttribute("aria-current", String(n === i)));
+                }, { passive: true });
+            }
+            const track = $(".pg-track", pg);
+            $$(".pg-photo", track).forEach(n => n.remove());
+            const photos = MODEL_PHOTOS[p.id + "|" + color.name] || [];
+            photos.forEach(([src, alt]) => {
+                const d = document.createElement("div");
+                d.className = "pg-photo";
+                d.innerHTML = `<img src="${esc(src)}" alt="${esc(alt)}" width="900" height="1125" loading="lazy">`;
+                track.appendChild(d);
+            });
+            track.scrollLeft = 0;
+            const many = photos.length > 0;
+            const dots = $(".pg-dots", pg);
+            dots.hidden = !many;
+            $$(".pg-nav", pg).forEach(b => { b.hidden = !many; });
+            dots.innerHTML = many ? Array.from({ length: photos.length + 1 }, (_, n) => `<button type="button" class="pg-dot" aria-label="Photo ${n + 1}" aria-current="${n === 0}"></button>`).join("") : "";
+            $$(".pg-dot", dots).forEach((b, n) => b.addEventListener("click", () => track.scrollTo({ left: n * track.clientWidth, behavior: "smooth" })));
+        }
+
         function setColor(card, p, index) {
             const color = p.colors[index];
             if (!color) return;
@@ -334,6 +389,7 @@
                 imageContainer.classList.add("card-cutout");
                 image.style.objectFit = "contain";
                 image.src = cutoutSrc(color.img);
+                renderGallery(card, p, color);
             } else {
                 image.src = color.img;
             }
