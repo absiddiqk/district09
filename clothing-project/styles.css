@@ -497,7 +497,7 @@
         /* Footer contact details */
         .footer-contact {
             max-width: 1240px; margin: 28px auto 0; padding-top: 24px; border-top: 1px solid rgba(255,255,255,.14);
-            display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 20px;
+            display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px;
         }
         .footer-contact h4 { font-size: 10px; letter-spacing: 1.6px; color: #9c9992; margin-bottom: 6px; font-weight: 700; }
         .footer-contact a, .footer-contact p { font-size: 13px; color: #fff; line-height: 1.6; overflow-wrap: anywhere; }
@@ -901,3 +901,7 @@
 .pg-photo + .pg-photo { }
 .pg-dots { left: 50%; right: auto; transform: translateX(-50%); padding: 7px 10px; background: rgba(245, 243, 237, .9); border-radius: 999px; }
 .pg-dot { width: 16px; }
+
+/* Footer contact icons */
+.footer-contact .contact-line .ci { color: #fff; }
+.footer-contact .contact-line + .contact-line { margin-top: 6px; }
