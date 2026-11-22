@@ -927,3 +927,11 @@
 .registered-card h2{margin:0;font-size:1.2rem;letter-spacing:.06em}
 .registered-card p{margin:0;color:#5c5952}
 .registered-card .button{display:block;text-align:center}
+
+/* Account orders */
+.acct-orders{margin-top:32px;display:grid;gap:14px}
+.acct-orders h2{font-size:1rem;letter-spacing:.06em;margin:0}
+.acct-order{border:1px solid var(--line);padding:16px;display:grid;gap:8px}
+.acct-order-head{display:flex;justify-content:space-between;gap:12px}
+.acct-order ul{margin:0;padding-left:18px;font-size:14px;line-height:1.6}
+.acct-order .track-help{margin:0}
