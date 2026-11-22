@@ -938,3 +938,10 @@
 
 /* Menu scrolls when it is taller than the screen */
 .site-menu{overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding-bottom:max(40px,env(safe-area-inset-bottom))}
+
+/* Account: details and orders side by side on wide screens */
+@media (min-width: 860px){
+  .track.account{max-width:1040px}
+  .acct-cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:56px;align-items:start}
+  .acct-cols .acct-orders{margin-top:0}
+}

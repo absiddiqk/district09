@@ -192,6 +192,8 @@
             const states = D().DELIVERY_STATES.map(s => `<option value="${esc(s)}"${s === c.state ? " selected" : ""}>${esc(s)}</option>`).join("");
             app.innerHTML = `
                 <p class="track-intro">${isNew ? "Almost done. Tell us a bit about you so checkout is quicker next time." : "Signed in as <strong>" + esc(c.email) + "</strong>. These details fill in automatically at checkout."}</p>
+                <div class="acct-cols">
+                <div class="acct-left">
                 <form id="profileForm" class="account-form" novalidate>
                     <div class="checkout-fields">
                         <div class="checkout-field"><label for="pfName">FULL NAME *</label><input id="pfName" autocomplete="name" required value="${esc(c.name)}"></div>
@@ -208,7 +210,9 @@
                     <a class="button button-secondary" href="shop.html">CONTINUE SHOPPING</a>
                     <button class="button button-secondary" type="button" id="acLogout">SIGN OUT</button>
                 </div>
+                </div>
                 <section id="acOrders" class="acct-orders"><h2>YOUR ORDERS</h2><p class="track-help">Loading your orders&hellip;</p></section>
+                </div>
                 <p class="track-help">We only use your details for your orders and, if you tick the box, our updates. <button type="button" class="link-btn" id="acDelete">Delete my account and data</button></p>`;
             const form = app.querySelector("#profileForm");
             loadOrders(c.email);
