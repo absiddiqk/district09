@@ -62,6 +62,19 @@
         const busy = (btn, on, text) => { btn.disabled = on; if (text) btn.textContent = on ? text : btn.dataset.label; };
         const setMsg = (text, ok) => { const m = app.querySelector(".account-msg"); if (m) { m.textContent = text || ""; m.className = "checkout-message account-msg" + (text && !ok ? " error" : ""); } };
 
+        // Remember a code was just sent, so leaving to read the email (and the browser reloading this page) does not restart sign-in.
+        const PENDING_KEY = "d09_signin_pending_v1", CODE_TTL = 10 * 60 * 1000, RESEND_AFTER = 60 * 1000;
+        function savePending(at) { try { localStorage.setItem(PENDING_KEY, JSON.stringify({ email, at: at || Date.now() })); } catch { /* private mode */ } }
+        function clearPending() { try { localStorage.removeItem(PENDING_KEY); } catch { /* ignore */ } }
+        function loadPending() {
+            try {
+                const p = JSON.parse(localStorage.getItem(PENDING_KEY) || "null");
+                if (p && typeof p.email === "string" && p.email && Date.now() - Number(p.at) < CODE_TTL) return p;
+            } catch { /* ignore */ }
+            clearPending();
+            return null;
+        }
+
         function viewEmail() {
             title.textContent = "SIGN IN OR CREATE AN ACCOUNT";
             app.innerHTML = `
@@ -84,7 +97,7 @@
                 if (!input.checkValidity()) { setMsg("Please enter a valid email address."); input.focus(); return; }
                 email = input.value.trim().toLowerCase();
                 busy(btn, true, "SENDING...");
-                try { await api("request-code", "POST", { email }); viewCode(); }
+                try { await api("request-code", "POST", { email }); savePending(); viewCode(); }
                 catch (err) { setMsg(err.message); busy(btn, false, true); }
             });
             form.querySelector("#acEmail").focus();
@@ -101,11 +114,28 @@
                     </div>
                     <p class="checkout-message account-msg"></p>
                     <button class="button" type="submit" data-label="CONTINUE">CONTINUE</button>
+                    <button class="button button-secondary" type="button" id="acResend" disabled>SEND A NEW CODE</button>
                     <button class="button button-secondary" type="button" id="acBack">USE A DIFFERENT EMAIL</button>
                 </form>`;
             const form = app.querySelector("form"), input = form.querySelector("#acCode");
             input.focus();
-            form.querySelector("#acBack").addEventListener("click", viewEmail);
+            form.querySelector("#acBack").addEventListener("click", () => { clearPending(); viewEmail(); });
+            const resend = form.querySelector("#acResend");
+            const sentAt = () => { const p = loadPending(); return p ? Number(p.at) : Date.now(); };
+            const tickResend = () => {
+                if (!document.body.contains(resend)) return clearInterval(timer);
+                const left = Math.ceil((RESEND_AFTER - (Date.now() - sentAt())) / 1000);
+                resend.disabled = left > 0;
+                resend.textContent = left > 0 ? "SEND A NEW CODE (" + left + "s)" : "SEND A NEW CODE";
+                if (left <= 0) clearInterval(timer);
+            };
+            const timer = setInterval(tickResend, 1000); tickResend();
+            resend.addEventListener("click", async () => {
+                resend.disabled = true; resend.textContent = "SENDING...";
+                try { await api("request-code", "POST", { email }); savePending(); setMsg("A new code is on its way.", true); }
+                catch (err) { setMsg(err.message); }
+                const t2 = setInterval(() => { tickResend(); if (!resend.disabled) clearInterval(t2); }, 1000); tickResend();
+            });
             form.addEventListener("submit", async e => {
                 e.preventDefault();
                 const btn = form.querySelector("button[type=submit]");
@@ -113,6 +143,7 @@
                 busy(btn, true, "CHECKING...");
                 try {
                     const { customer, isNew } = await api("verify-code", "POST", { email, code: input.value.trim() });
+                    clearPending();
                     D().applyCustomer(customer);
                     D().track(isNew ? "account_created" : "account_signed_in");
                     viewProfile(customer, isNew);
@@ -182,6 +213,8 @@
                     return;
                 }
             } catch { /* fall through to sign-in */ }
+            const pending = loadPending();
+            if (pending) { email = pending.email; return viewCode(); }
             viewEmail();
         }
         start();
