@@ -1,8 +1,7 @@
 // GET: the signed-in customer's paid orders. There is no order database, so this asks Paystack
 // for successful payments made with the customer's verified email and returns only order details.
-const { query, ensureSchema, dbConfigured } = require("../_lib/db");
-const { secret, getSession } = require("../_lib/session");
-const { reply } = require("../_lib/http");
+const { query } = require("./db");
+const { reply } = require("./http");
 
 function meta(v) {
   if (v && typeof v === "object") return v;
@@ -17,16 +16,11 @@ async function paystack(path, key) {
   return j.data;
 }
 
-module.exports = async (req, res) => {
-  if (req.method !== "GET") return reply(res, 405, { error: "Method not allowed." });
-  if (!dbConfigured() || !secret()) return reply(res, 503, { error: "Accounts aren't available yet." });
-  const session = getSession(req);
-  if (!session) return reply(res, 401, { error: "Please sign in first." });
+// Called from api/account/me.js with an already-verified session (keeps the function count under Vercel's Hobby limit).
+module.exports = async function orders(res, session) {
   const key = process.env.PAYSTACK_SECRET_KEY || "";
   if (!/^sk_(test|live)_/.test(key)) return reply(res, 503, { error: "Orders are temporarily unavailable." });
-
   try {
-    await ensureSchema();
     const rows = await query(`SELECT email FROM customers WHERE id = $1`, [session.id]);
     if (!rows[0]) return reply(res, 401, { error: "Please sign in first." });
     const email = String(rows[0].email).trim().toLowerCase();

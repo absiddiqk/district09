@@ -4,6 +4,7 @@ const { secret, getSession, clearSession } = require("../_lib/session");
 const { reply, body, clip } = require("../_lib/http");
 const { mailConfigured, sendWelcome } = require("../_lib/mailer");
 const { publicCustomer } = require("../_lib/customer");
+const listOrders = require("../_lib/orders");
 
 module.exports = async (req, res) => {
   if (!dbConfigured() || !secret() || !mailConfigured()) {
@@ -15,6 +16,7 @@ module.exports = async (req, res) => {
 
   try {
     await ensureSchema();
+    if (req.method === "GET" && req.query && req.query.orders) return listOrders(res, session);
     if (req.method === "GET") {
       const rows = await query(`SELECT * FROM customers WHERE id = $1`, [session.id]);
       if (!rows[0]) { clearSession(res); return reply(res, 200, { customer: null, available: true }); }

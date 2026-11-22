@@ -156,7 +156,7 @@
         if (!box) return;
         const naira = n => "\u20A6" + Number(n).toLocaleString("en-NG");
         try {
-            const { orders } = await api("orders");
+            const { orders } = await api("me?orders=1");
             if (!box.isConnected) return;
             if (location.hash === "#acOrders") setTimeout(() => box.scrollIntoView({ behavior: "smooth", block: "start" }), 0);
             if (!orders || !orders.length) { box.innerHTML = `<h2>YOUR ORDERS</h2><p class="track-help">No orders yet. Orders paid with ${esc(addr || "this email")} will show up here.</p><a class="button button-secondary" href="shop.html">START SHOPPING</a>`; return; }
