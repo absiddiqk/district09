@@ -935,3 +935,6 @@
 .acct-order-head{display:flex;justify-content:space-between;gap:12px}
 .acct-order ul{margin:0;padding-left:18px;font-size:14px;line-height:1.6}
 .acct-order .track-help{margin:0}
+
+/* Menu scrolls when it is taller than the screen */
+.site-menu{overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding-bottom:max(40px,env(safe-area-inset-bottom))}
