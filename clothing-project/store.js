@@ -360,6 +360,27 @@
             $$(".pg-dot", dots).forEach((b, n) => b.addEventListener("click", () => track.scrollTo({ left: n * track.clientWidth, behavior: "smooth" })));
         }
 
+        /* Desktop only: hovering a product picture shows a model wearing it (when we have a photo for that colour). */
+        const HOVER_PHOTOS = !!(window.matchMedia && window.matchMedia("(hover: hover) and (min-width: 900px)").matches);
+        function syncHoverPhoto(card, colorIndex) {
+            if (!HOVER_PHOTOS || !card || card.closest("#productPage")) return;
+            const p = byId[card.dataset.cardId];
+            const container = $(".image-container", card);
+            if (!p || !container) return;
+            const pressed = $$("[data-card-color]", card).findIndex(d => d.getAttribute("aria-pressed") === "true");
+            const idx = Number.isInteger(colorIndex) ? colorIndex : Math.max(pressed, 0);
+            const color = p.colors[idx];
+            const photos = color && color.status !== "soon" ? MODEL_PHOTOS[p.id + "|" + color.name] : null;
+            let el = $(".hover-photo", container);
+            if (!photos || !photos.length) { if (el) el.remove(); return; }
+            if (!el) {
+                el = document.createElement("img");
+                el.className = "hover-photo"; el.alt = ""; el.setAttribute("aria-hidden", "true"); el.loading = "lazy"; el.decoding = "async";
+                container.appendChild(el);
+            }
+            if (!el.src.endsWith(photos[0][0])) el.src = photos[0][0];
+        }
+
         function setColor(card, p, index) {
             const color = p.colors[index];
             if (!color) return;
@@ -1434,6 +1455,7 @@
             $$("[data-card-color]", card).forEach(d => d.setAttribute("aria-pressed", String(d === dot)));
             $(".card-link", card).href = `product.html?id=${encodeURIComponent(p.id)}&color=${idx}`;
             const sel = $("[data-select-link]", card); if (sel) sel.href = $(".card-link", card).href;
+            syncHoverPhoto(card, idx);
             track("colour_selected", { product_id: p.id, colour: c.name, from: "grid" });
         });
 
@@ -1459,6 +1481,7 @@
         /* ---------- SHOP ALL ---------- */
         function renderShop() {
             $("#shopSections").innerHTML = groupedGridHtml();
+            $$("[data-card-id]", $("#shopSections")).forEach(c => syncHoverPhoto(c));
         }
 
         /* ---------- PRODUCT PAGE: one product, choose colour + size, add to bag ---------- */
@@ -1483,6 +1506,7 @@
             const row = $("#featuredRow");
             if (!row) return;
             row.innerHTML = groupedGridHtml();
+            $$("[data-card-id]", row).forEach(c => syncHoverPhoto(c));
         }
 
         /* ---------- HOME: TOP SLIDESHOW OF AVAILABLE PIECES ---------- */
