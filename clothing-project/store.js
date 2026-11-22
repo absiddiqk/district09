@@ -341,6 +341,23 @@
                     const i = Math.round(track.scrollLeft / Math.max(track.clientWidth, 1));
                     $$(".pg-dot", pg).forEach((d, n) => d.setAttribute("aria-current", String(n === i)));
                 }, { passive: true });
+                // Auto-advance every 4 seconds; pauses while the shopper is hovering, touching or focused on it.
+                const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                let paused = false, resumeT = null;
+                const slides = () => track.children.length;
+                setInterval(() => {
+                    if (reduce || paused || document.hidden || slides() < 2 || !document.body.contains(track)) return;
+                    const i = Math.round(track.scrollLeft / Math.max(track.clientWidth, 1));
+                    track.scrollTo({ left: ((i + 1) % slides()) * track.clientWidth, behavior: "smooth" });
+                }, 4000);
+                const hold = () => { paused = true; clearTimeout(resumeT); };
+                const release = (delay) => { clearTimeout(resumeT); resumeT = setTimeout(() => { paused = false; }, delay); };
+                pg.addEventListener("mouseenter", hold);
+                pg.addEventListener("mouseleave", () => release(800));
+                pg.addEventListener("focusin", hold);
+                pg.addEventListener("focusout", () => release(800));
+                pg.addEventListener("touchstart", hold, { passive: true });
+                pg.addEventListener("touchend", () => release(6000), { passive: true });
             }
             const track = $(".pg-track", pg);
             $$(".pg-photo", track).forEach(n => n.remove());
