@@ -158,6 +158,7 @@
         try {
             const { orders } = await api("orders");
             if (!box.isConnected) return;
+            if (location.hash === "#acOrders") setTimeout(() => box.scrollIntoView({ behavior: "smooth", block: "start" }), 0);
             if (!orders || !orders.length) { box.innerHTML = `<h2>YOUR ORDERS</h2><p class="track-help">No orders yet. Orders paid with ${esc(addr || "this email")} will show up here.</p><a class="button button-secondary" href="shop.html">START SHOPPING</a>`; return; }
             box.innerHTML = `<h2>YOUR ORDERS</h2>` + orders.map(o => {
                 const d = o.paid_at ? new Date(o.paid_at).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }) : "";
