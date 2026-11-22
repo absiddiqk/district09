@@ -908,3 +908,8 @@
 
 /* Home: a single contact card */
 .about-details { grid-template-columns: 1fr; max-width: 440px; }
+
+/* Home: the contact card holds only the CONTACT US button */
+.about-details .contact-only { border: 0; background: transparent; padding: 0; }
+.about-details .contact-only .button { width: 100%; }
+.about-details { padding-top: 30px; padding-bottom: 60px; }
