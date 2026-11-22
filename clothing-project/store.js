@@ -821,7 +821,7 @@
                         track("details_saved_after_checkout", { marketing_consent: saved.customer.marketing_consent });
                         box.innerHTML = `
                             <h3>DETAILS SAVED</h3>
-                            <p>Next time your name, phone and delivery address fill in automatically at checkout.${saved.customer.marketing_consent ? " We&rsquo;ll email you about new drops and offers." : ""}</p>`;
+                            <p>Next time your name, phone and delivery address fill in automatically at checkout.${saved.customer.marketing_consent ? " We&rsquo;ll email you about new drops and offers." : ""}${saved.welcomed ? " A confirmation email is on its way." : ""}</p>`;
                     } catch (err) { setMsg(err.message); busy(btn, false); }
                 });
             }

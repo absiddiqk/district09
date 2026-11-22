@@ -151,7 +151,25 @@
             });
         }
 
-        function viewProfile(c, isNew, saved) {
+            function showRegistered(c, emailed) {
+        const first = String(c.name || "").trim().split(/\s+/)[0];
+        const box = document.createElement("div");
+        box.className = "registered-overlay";
+        box.innerHTML = `<div class="registered-card" role="dialog" aria-modal="true" aria-labelledby="regTitle">
+            <h2 id="regTitle">YOU&rsquo;RE REGISTERED${first ? ", " + esc(first.toUpperCase()) : ""}</h2>
+            <p>You&rsquo;re signed in and your details are saved.${emailed ? " We&rsquo;ve sent a confirmation to " + esc(c.email) + "." : ""}</p>
+            <a class="button" href="shop.html" id="regShop">KEEP SHOPPING</a>
+            <button type="button" class="button button-secondary" id="regClose">VIEW MY ACCOUNT</button>
+        </div>`;
+        document.body.appendChild(box);
+        const close = () => box.remove();
+        box.querySelector("#regClose").addEventListener("click", close);
+        box.addEventListener("click", e => { if (e.target === box) close(); });
+        document.addEventListener("keydown", function k(e) { if (e.key === "Escape") { close(); document.removeEventListener("keydown", k); } });
+        box.querySelector("#regShop").focus();
+    }
+
+    function viewProfile(c, isNew, saved) {
             title.textContent = isNew ? "WELCOME TO DISTRICT 09" : "YOUR ACCOUNT";
             const states = D().DELIVERY_STATES.map(s => `<option value="${esc(s)}"${s === c.state ? " selected" : ""}>${esc(s)}</option>`).join("");
             app.innerHTML = `
@@ -181,7 +199,7 @@
                 if (!name.value.trim()) { setMsg("Please enter your name."); name.focus(); return; }
                 busy(btn, true, "SAVING...");
                 try {
-                    const { customer } = await api("me", "POST", {
+                    const { customer, registered, welcomed } = await api("me", "POST", {
                         name: name.value, phone: form.querySelector("#pfPhone").value, state: form.querySelector("#pfState").value,
                         city: form.querySelector("#pfCity").value, address: form.querySelector("#pfAddress").value,
                         marketing_consent: form.querySelector("#pfConsent").checked
@@ -189,6 +207,7 @@
                     D().applyCustomer(customer);
                     D().track("profile_saved", { marketing_consent: customer.marketing_consent });
                     viewProfile(customer, false, true);
+                    if (registered) showRegistered(customer, welcomed);
                 } catch (err) { setMsg(err.message); busy(btn, false, true); }
             });
             app.querySelector("#acLogout").addEventListener("click", async () => {

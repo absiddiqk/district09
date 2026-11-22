@@ -2,7 +2,7 @@
 const { query, ensureSchema, dbConfigured, truthy } = require("../_lib/db");
 const { secret, getSession, clearSession } = require("../_lib/session");
 const { reply, body, clip } = require("../_lib/http");
-const { mailConfigured } = require("../_lib/mailer");
+const { mailConfigured, sendWelcome } = require("../_lib/mailer");
 const { publicCustomer } = require("../_lib/customer");
 
 module.exports = async (req, res) => {
@@ -28,6 +28,8 @@ module.exports = async (req, res) => {
       const phone = clip(input.phone, 25);
       if (phone && !/^[+0-9\s\-()]{7,25}$/.test(phone)) return reply(res, 400, { error: "Please enter a valid phone number." });
       const consent = input.marketing_consent === true || input.marketing_consent === "true";
+      const before = await query(`SELECT * FROM customers WHERE id = $1`, [session.id]);
+      const firstSave = Boolean(before[0]) && !String(before[0].name || "").trim();
       const rows = await query(
         `UPDATE customers SET name = $2, phone = $3, address = $4, city = $5, state = $6,
            marketing_consent = $7,
@@ -35,7 +37,10 @@ module.exports = async (req, res) => {
          WHERE id = $1 RETURNING *`,
         [session.id, name, phone, clip(input.address, 300), clip(input.city, 100), clip(input.state, 60), consent]);
       if (!rows[0]) return reply(res, 404, { error: "Account not found." });
-      return reply(res, 200, { customer: publicCustomer(rows[0]) });
+      // First time they save a name = registration complete: send the welcome email (never blocks the save).
+      let welcomed = false;
+      if (firstSave) { try { await sendWelcome(rows[0].email, name); welcomed = true; } catch { /* the save still succeeded */ } }
+      return reply(res, 200, { customer: publicCustomer(rows[0]), welcomed, registered: firstSave });
     }
 
     if (req.method === "DELETE") {
