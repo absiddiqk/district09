@@ -11,14 +11,14 @@ const CATALOG = {
     price: 30000,
     offer_price: 25000, // during the offer window (OFFER_START to OFFER_END)
     sizes: ["S", "M", "L", "XL", "2XL"],
-    colors: ["Black", "White", "Sky Blue", "Brown", "Dark Grey"],
+    colors: ["Black", "White", "Brown", "Dark Grey"],
   },
   "short-sleeve-henley": {
     name: "D09 Short Sleeve Henley",
     price: 30000,
     offer_price: 25000, // during the offer window (OFFER_START to OFFER_END)
     sizes: ["S", "M", "L", "XL", "2XL"],
-    colors: ["Black", "White", "Sky Blue", "Brown", "Dark Grey"],
+    colors: ["Black", "White", "Brown", "Dark Grey"],
   },
   "d09-signature-henley": {
     name: "D09 Signature Henley — Long Sleeve",

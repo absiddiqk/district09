@@ -24,6 +24,5 @@ window.D09_REVIEW_IMAGES = [
   { src: "plain_black.jpg",        alt: "Sample photo: Classic Henley in black" },
   { src: "short_sleeve_white.jpg", alt: "Sample photo: Short sleeve Henley in white" },
   { src: "special_henley2.jpg",    alt: "Sample photo: Signature Henley in navy blue" },
-  { src: "plain_brown.jpg",        alt: "Sample photo: Classic Henley in brown" },
-  { src: "short_sleeve_skyblue.jpg", alt: "Sample photo: Short sleeve Henley in sky blue" }
+  { src: "plain_brown.jpg",        alt: "Sample photo: Classic Henley in brown" }
 ];

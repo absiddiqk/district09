@@ -33,7 +33,6 @@
         const SHADES = [
             { name: "Black",    cls: "black",   key: "black" },
             { name: "White",    cls: "white",   key: "white" },
-            { name: "Sky Blue", cls: "skyblue", key: "skyblue" },
             { name: "Brown",    cls: "brown",   key: "brown" },
             { name: "Dark Grey", cls: "darkgrey", key: "darkgrey" }
         ];
@@ -1533,10 +1532,10 @@
             // Model photos for the home slideshow. Each links to the piece worn (colour index in the product's colours).
             const MODEL_SLIDES = [
                 { photo: "photos/model-1.jpg", id: "classic-henley", ci: 0, alt: "Two models wearing the black long-sleeve henley" },
-                { photo: "photos/model-2.jpg", id: "classic-henley", ci: 3, alt: "Model in the brown long-sleeve henley beside a model in the white short-sleeve henley" },
-                { photo: "photos/model-3.jpg", id: "classic-henley", ci: 3, alt: "Model wearing the brown long-sleeve henley" },
+                { photo: "photos/model-2.jpg", id: "classic-henley", ci: 2, alt: "Model in the brown long-sleeve henley beside a model in the white short-sleeve henley" },
+                { photo: "photos/model-3.jpg", id: "classic-henley", ci: 2, alt: "Model wearing the brown long-sleeve henley" },
                 { photo: "photos/model-4.jpg", id: "classic-henley", ci: 0, alt: "Two models in black henleys and trousers" },
-                { photo: "photos/model-5.jpg", id: "classic-henley", ci: 3, alt: "Models in the brown long-sleeve and white short-sleeve henleys" },
+                { photo: "photos/model-5.jpg", id: "classic-henley", ci: 2, alt: "Models in the brown long-sleeve and white short-sleeve henleys" },
                 { photo: "photos/model-6.jpg", id: "classic-henley", ci: 0, alt: "Models in black henleys photographed from below" },
                 { photo: "photos/model-7.jpg", id: "classic-henley", ci: 0, alt: "Model in the black long-sleeve henley looking at a phone" }
             ];
