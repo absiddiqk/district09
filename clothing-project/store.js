@@ -1539,7 +1539,7 @@
                 { photo: "photos/model-6.jpg", id: "classic-henley", ci: 0, alt: "Models in black henleys photographed from below" },
                 { photo: "photos/model-7.jpg", id: "classic-henley", ci: 0, alt: "Model in the black long-sleeve henley looking at a phone" },
                 { photo: "photos/model-8.jpg", id: "classic-henley", ci: 1, alt: "Model in the white long-sleeve henley with her arms crossed" },
-                { photo: "photos/model-9.jpg", id: "classic-henley", ci: 0, alt: "Model in the black long-sleeve henley in front of a graffiti wall" },
+                { photo: "photos/model-9.jpg", id: "classic-henley", ci: 1, alt: "Model in the white long-sleeve henley and black trousers against a white backdrop" },
                 { photo: "photos/model-10.jpg", id: "classic-henley", ci: 2, alt: "Model in the white short-sleeve henley sitting beside a model in the brown long-sleeve henley" },
                 { photo: "photos/model-11.jpg", id: "short-sleeve-henley", ci: 1, alt: "Close-up of the white short-sleeve henley with a model in the brown long-sleeve henley behind" }
             ];
