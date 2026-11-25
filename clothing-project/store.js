@@ -1049,7 +1049,12 @@
         function injectChrome() {
             const announcement = document.createElement("div");
             announcement.className = "announcement";
-            announcement.innerHTML = "DISTRICT 09 &mdash; CURATED WARDROBE";
+            // Launch banner: counts toward Dec 1 (West Africa Time), says NOW LIVE for a week, then returns to normal.
+            const LAUNCH = Date.parse("2026-12-01T00:00:00+01:00"), LAUNCH_END = Date.parse("2026-12-08T00:00:00+01:00");
+            const nowMs = Date.now();
+            announcement.innerHTML = nowMs < LAUNCH ? "DISTRICT 09 &mdash; LAUNCHING DECEMBER 1ST"
+                : nowMs < LAUNCH_END ? "DISTRICT 09 &mdash; NOW LIVE"
+                : "DISTRICT 09 &mdash; CURATED WARDROBE";
 
             const header = document.createElement("header");
             header.innerHTML = `
