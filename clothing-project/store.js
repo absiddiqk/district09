@@ -1162,6 +1162,16 @@
             const root = document.createElement("div");
             root.id = "modalRoot";
             root.innerHTML = `
+    <!-- COMING SOON -->
+    <div class="modal-overlay" id="comingSoonModal" role="dialog" aria-modal="true" aria-labelledby="comingSoonTitle">
+        <div class="modal-card coming-soon-card">
+            <button type="button" class="modal-close" data-close aria-label="Close and browse the page">&times;</button>
+            <p class="coming-soon-brand">DISTRICT 09 COLLECTION</p>
+            <h2 id="comingSoonTitle">COMING SOON</h2>
+            <p class="modal-note">Clean corporate fits, launching soon. Close this and take a look around.</p>
+        </div>
+    </div>
+
     <!-- CONTACT US -->
     <div class="modal-overlay" id="contactModal" role="dialog" aria-modal="true" aria-labelledby="contactTitle">
         <div class="modal-card">
@@ -1667,6 +1677,15 @@
             const year = $("#year");
             if (year) year.textContent = new Date().getFullYear();
             updatePaymentModeNotice();
+            // "Coming soon" pop-up: once per visit, never over sign-in or tracking pages.
+            if (!/\/(account|track)\.html$/.test(location.pathname)) {
+                let seen = false;
+                try { seen = sessionStorage.getItem("d09_soon_seen") === "1"; } catch { /* storage blocked: show it */ }
+                if (!seen) {
+                    try { sessionStorage.setItem("d09_soon_seen", "1"); } catch { /* ignore */ }
+                    openModal("comingSoonModal");
+                }
+            }
 
             ["#productSections", "#shopSections", "#productPage"].forEach(sel => {
                 const el = $(sel);
