@@ -1168,7 +1168,7 @@
             <button type="button" class="modal-close" data-close aria-label="Close and browse the page">&times;</button>
             <p class="coming-soon-brand">DISTRICT 09 COLLECTION</p>
             <h2 id="comingSoonTitle">COMING SOON</h2>
-            <p class="modal-note">Clean corporate fits, launching soon. Close this and take a look around.</p>
+            <p class="modal-note">Pre-order is now available, launching soon.</p>
         </div>
     </div>
 
